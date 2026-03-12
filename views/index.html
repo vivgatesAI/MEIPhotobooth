@@ -7,81 +7,68 @@
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <main class="app single-screen">
-    <header class="topbar">
-      <div class="brand">
-        <img src="/assets/logo.png" alt="logo" />
-        <div>
-          <h1>MEI Photo Booth</h1>
-          <p>Boston · Medical Engagement & Impact</p>
-        </div>
-      </div>
-      <div class="status-inline" id="status">Ready</div>
-    </header>
-
-    <section class="workspace">
-      <div class="left-panel">
-        <div class="camera-frame">
-          <video id="video" autoplay playsinline muted></video>
-          <canvas id="captureCanvas" style="display:none"></canvas>
-          <img id="previewImg" alt="preview" style="display:none" />
-        </div>
-
-        <div class="quick-actions">
-          <button id="startCameraBtn" class="btn primary">Enable Camera</button>
-          <button id="captureBtn" class="btn" disabled>Capture</button>
-          <label class="btn file-btn">Upload
-            <input id="uploadInput" type="file" accept="image/*" />
+  <main class="app-root">
+    <section id="welcomeView" class="view active welcome-view">
+      <div class="welcome-card">
+        <img src="/assets/logo.png" alt="MEI" class="welcome-logo" />
+        <h1>MEI Photo Booth</h1>
+        <p class="script">Boston Medical Engagement & Impact</p>
+        <p class="welcome-copy">Snap or upload a photo and transform it with Venice AI styles.</p>
+        <div class="welcome-actions">
+          <button id="startBtn" class="btn primary">Take a Photo 🎉</button>
+          <label class="btn secondary upload-inline">Upload Photo 📂
+            <input id="uploadFromWelcome" type="file" accept="image/*" />
           </label>
-          <button id="clearBtn" class="btn">Reset</button>
-        </div>
-
-        <div class="processing" id="progressWrap">
-          <div class="spinner"></div>
-          <div class="processing-text">Processing image and preserving likeness…</div>
-          <div class="wave"></div>
-        </div>
-      </div>
-
-      <div class="right-panel">
-        <div class="control-group compact">
-          <p class="label">Presets</p>
-          <div id="presetGrid" class="preset-pills"></div>
-          <textarea id="customPrompt" placeholder="Custom look…" style="display:none"></textarea>
-        </div>
-
-        <div class="control-group compact">
-          <p class="label">Model</p>
-          <select id="modelSelect" class="model-select"></select>
-          <label class="soft-label"><input id="softerStyle" type="checkbox" /> Softer style</label>
-        </div>
-
-        <div class="control-group compact">
-          <button id="generateBtn" class="btn primary" disabled>Generate</button>
-          <button id="regenerateBtn" class="btn" disabled>Regenerate</button>
-        </div>
-
-        <div class="result-frame">
-          <img id="resultImg" alt="result" style="display:none" />
-        </div>
-
-        <div class="control-group compact two">
-          <button id="downloadBtn" class="btn" disabled>Download</button>
-          <button id="saveLocalBtn" class="btn primary" disabled>Save</button>
-        </div>
-
-        <div class="control-group compact two">
-          <button id="openGalleryBtn" class="btn">Saved Photos</button>
-          <button id="clearGalleryBtn" class="btn">Clear Saved</button>
         </div>
       </div>
     </section>
 
-    <section class="gallery-inline" id="galleryCard" style="display:none">
-      <div id="galleryGrid" class="gallery-grid"></div>
+    <section id="cameraView" class="view camera-view">
+      <div class="camera-shell">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="captureCanvas" style="display:none"></canvas>
+        <img id="previewImg" alt="preview" style="display:none" />
+      </div>
+      <div class="camera-controls">
+        <button id="homeBtn" class="btn secondary">Home</button>
+        <button id="captureBtn" class="capture-btn" disabled aria-label="Take Photo"></button>
+        <label class="btn secondary upload-inline">Upload
+          <input id="uploadInput" type="file" accept="image/*" />
+        </label>
+      </div>
+    </section>
+
+    <section id="previewView" class="view preview-view">
+      <div class="preview-shell">
+        <img id="resultImg" alt="result" />
+      </div>
+      <div class="processing" id="progressWrap">
+        <div class="spinner"></div>
+        <span>Applying AI style…</span>
+      </div>
+      <div class="style-toolbar">
+        <div id="presetGrid" class="preset-pills"></div>
+        <textarea id="customPrompt" placeholder="Custom style prompt..." style="display:none"></textarea>
+      </div>
+      <div class="bottom-actions">
+        <button id="retakeBtn" class="btn secondary">Retake</button>
+        <button id="generateBtn" class="btn tertiary">Apply Style</button>
+        <button id="downloadBtn" class="btn primary">Save</button>
+      </div>
+      <p id="status" class="status">Ready</p>
+    </section>
+
+    <section id="consentModal" class="modal hidden">
+      <div class="modal-card">
+        <h3>Quick Note!</h3>
+        <p>This photo booth needs camera access to take pictures. You can also upload from your phone library.</p>
+        <div class="modal-actions">
+          <button id="cancelConsentBtn" class="btn secondary">Cancel</button>
+          <button id="agreeConsentBtn" class="btn primary">I Agree</button>
+        </div>
+      </div>
     </section>
   </main>
-
   <script src="/assets/app.js"></script>
 </body>
 </html>
