@@ -12,15 +12,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = Number(process.env.PORT || 3100);
 
-const AVAILABLE_MODELS = [
-  "qwen-edit",
-  "flux-2-max-edit",
-  "gpt-image-1-5-edit",
-  "seedream-v4-edit",
-  "nano-banana-pro-edit",
-];
+const AVAILABLE_MODELS = ["qwen-edit"];
 
-const DEFAULT_MODEL = process.env.VENICE_IMAGE_EDIT_MODEL || "qwen-edit";
+const DEFAULT_MODEL = "qwen-edit";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -30,40 +24,40 @@ const upload = multer({
 });
 
 const PRESETS = {
-  mei_massachusetts: {
-    label: "MEI · Boston Skyline",
+  watercolor_boston: {
+    label: "Watercolor Boston",
     stylePrompt:
-      "Photoreal Boston skyline backdrop at golden hour, subtle MEI conference branding elements, polished medical engagement event atmosphere, clean modern lighting, tasteful futuristic-retro-aquarium color accents",
+      "Transform into a refined watercolor portrait style with soft brush textures and a tasteful Boston skyline background, pastel palette, artistic paper grain, premium event-poster feel.",
   },
-  lobster_harbor: {
-    label: "Lobster Harbor",
+  sketch_wave: {
+    label: "Sketch + Wave",
     stylePrompt:
-      "Boston harbor waterfront scene with iconic lobster-themed visual storytelling, premium editorial look, warm red-orange accents, cinematic natural light, keep setting realistic and event-ready",
+      "Convert subject to elegant pencil-and-ink sketch linework while preserving identity, with a watercolor Boston skyline background and the phrase 'MEI Ride the Wave' integrated tastefully.",
   },
-  retro_aquarium: {
-    label: "Retro Aquarium",
+  neon_sign: {
+    label: "Neon Sign",
     stylePrompt:
-      "Futuristic retro aquarium environment with glass architecture, teal and amber glow, subtle volumetric light beams, high-end cinematic realism",
+      "Create a vibrant neon-night portrait scene with glowing signage and city ambiance, cinematic magenta-cyan highlights, polished photobooth energy.",
   },
-  clinical_future: {
-    label: "Clinical Future",
+  aquarium_glow: {
+    label: "Aquarium Glow",
     stylePrompt:
-      "Advanced Boston medical innovation campus background, refined glass interiors, clean white-and-blue palette, subtle holographic interfaces, realistic premium conference portrait style",
+      "Place subject in a luminous futuristic aquarium environment with flowing light beams, glass reflections, teal-blue glow, dreamy yet realistic details.",
   },
-  beacon_night: {
-    label: "Beacon Night",
+  mei_2026_banner: {
+    label: "MEI 2026 Banner",
     stylePrompt:
-      "Boston night skyline with crisp city lights and beacon glow, elegant event portrait mood, balanced contrast, polished editorial finish",
+      "Create an event portrait with a clean celebratory top banner reading 'MEI 2026', modern conference styling, balanced lighting, and subtle Boston context.",
   },
-  custom: {
-    label: "Custom",
-    stylePrompt: "",
+  boston_poster: {
+    label: "Boston Poster",
+    stylePrompt:
+      "High-impact editorial poster style portrait with dramatic Boston skyline backdrop, bold composition, crisp contrast, and premium conference branding mood.",
   },
 };
 
-function buildInstruction({ presetKey, customPrompt, softerStyle = false }) {
-  const preset = PRESETS[presetKey] || PRESETS.retro_aquarium;
-  const custom = (customPrompt || "").trim();
+function buildInstruction({ presetKey, softerStyle = false }) {
+  const preset = PRESETS[presetKey] || PRESETS.watercolor_boston;
 
   const likenessGuardrail = [
     "CRITICAL IDENTITY REQUIREMENT:",
@@ -75,10 +69,7 @@ function buildInstruction({ presetKey, customPrompt, softerStyle = false }) {
     "Output should look like the same real person photographed in a new scene.",
   ].join(" ");
 
-  const styleTarget =
-    presetKey === "custom"
-      ? `User custom direction: ${custom || "Apply elegant futuristic retro aquarium event styling with tasteful Boston medical conference context."}`
-      : `Preset direction: ${preset.stylePrompt}`;
+  const styleTarget = `Preset direction: ${preset.stylePrompt}`;
 
   const softness = softerStyle
     ? "Apply this style at lower intensity, keep result natural and realistic, avoid over-stylization."
@@ -99,12 +90,9 @@ app.get("/api/config", (_req, res) => {
     presets: Object.entries(PRESETS).map(([key, value]) => ({
       key,
       label: value.label,
-      thumbnail: `/assets/presets/${key}.png`,
     })),
     models: AVAILABLE_MODELS,
-    defaultModel: AVAILABLE_MODELS.includes(DEFAULT_MODEL)
-      ? DEFAULT_MODEL
-      : "qwen-edit",
+    defaultModel: "qwen-edit",
   });
 });
 
@@ -119,8 +107,7 @@ app.post("/api/edit", upload.single("image"), async (req, res) => {
       return res.status(400).json({ error: "Image is required" });
     }
 
-    const presetKey = String(req.body.preset || "retro_aquarium");
-    const customPrompt = String(req.body.customPrompt || "");
+    const presetKey = String(req.body.preset || "watercolor_boston");
     const aspectRatio = String(req.body.aspectRatio || "auto");
     const softerStyle = String(req.body.softerStyle || "false") === "true";
     const requestedModel = String(req.body.modelId || DEFAULT_MODEL);
@@ -128,7 +115,7 @@ app.post("/api/edit", upload.single("image"), async (req, res) => {
       ? requestedModel
       : (AVAILABLE_MODELS.includes(DEFAULT_MODEL) ? DEFAULT_MODEL : "qwen-edit");
 
-    const prompt = buildInstruction({ presetKey, customPrompt, softerStyle });
+    const prompt = buildInstruction({ presetKey, softerStyle });
 
     const payload = {
       image: req.file.buffer.toString("base64"),

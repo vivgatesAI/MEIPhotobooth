@@ -22,21 +22,20 @@ const uploadInput = document.getElementById("uploadInput");
 const uploadFromWelcome = document.getElementById("uploadFromWelcome");
 
 const presetGrid = document.getElementById("presetGrid");
-const customPrompt = document.getElementById("customPrompt");
 const progressWrap = document.getElementById("progressWrap");
 const statusEl = document.getElementById("status");
 
 let stream = null;
 let sourceBlob = null;
 let outputDataUrl = null;
-let selectedPreset = "mei_massachusetts";
+let selectedPreset = "watercolor_boston";
 const presets = [
-  { key: "mei_massachusetts", label: "MEI Skyline" },
-  { key: "lobster_harbor", label: "Lobster Harbor" },
-  { key: "retro_aquarium", label: "Retro Aquarium" },
-  { key: "clinical_future", label: "Clinical Future" },
-  { key: "beacon_night", label: "Beacon Night" },
-  { key: "custom", label: "Custom" },
+  { key: "watercolor_boston", label: "Watercolor Boston" },
+  { key: "sketch_wave", label: "Sketch + Wave" },
+  { key: "neon_sign", label: "Neon Sign" },
+  { key: "aquarium_glow", label: "Aquarium Glow" },
+  { key: "mei_2026_banner", label: "MEI 2026 Banner" },
+  { key: "boston_poster", label: "Boston Poster" },
 ];
 
 function setStatus(m) { statusEl.textContent = m || "Ready"; }
@@ -53,7 +52,6 @@ function renderPresets() {
     b.textContent = p.label;
     b.onclick = () => {
       selectedPreset = p.key;
-      customPrompt.style.display = p.key === "custom" ? "block" : "none";
       renderPresets();
     };
     presetGrid.appendChild(b);
@@ -126,7 +124,7 @@ async function applyStyle() {
   const fd = new FormData();
   fd.append("image", sourceBlob, "input.jpg");
   fd.append("preset", selectedPreset);
-  if (selectedPreset === "custom") fd.append("customPrompt", customPrompt.value || "");
+
   fd.append("aspectRatio", window.innerHeight > window.innerWidth ? "4:5" : "16:9");
 
   try {
