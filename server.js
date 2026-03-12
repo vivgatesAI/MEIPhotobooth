@@ -31,29 +31,29 @@ const upload = multer({
 
 const PRESETS = {
   mei_massachusetts: {
-    label: "MEI in Massachusetts",
+    label: "MEI · Boston Skyline",
     stylePrompt:
-      "Medical engagement impact summit in Boston, Massachusetts, elegant conference backdrop, subtle MEI signage, modern professional lighting, futuristic retro aquarium styling accents, clean and premium",
+      "Photoreal Boston skyline backdrop at golden hour, subtle MEI conference branding elements, polished medical engagement event atmosphere, clean modern lighting, tasteful futuristic-retro-aquarium color accents",
   },
   lobster_harbor: {
-    label: "Lobster Harbor Pop",
+    label: "Lobster Harbor",
     stylePrompt:
-      "Stylized Boston harbor lobster-inspired background, bold but tasteful red-orange accents, playful New England visual cues, futuristic retro aquarium aesthetic, cinematic color grading",
+      "Boston harbor waterfront scene with iconic lobster-themed visual storytelling, premium editorial look, warm red-orange accents, cinematic natural light, keep setting realistic and event-ready",
   },
   retro_aquarium: {
-    label: "Futuristic Retro Aquarium",
+    label: "Retro Aquarium",
     stylePrompt:
-      "Immersive futuristic retro aquarium world, glowing teal and amber light shafts, glass reflections, vintage sci-fi mood, dreamy but crisp details",
+      "Futuristic retro aquarium environment with glass architecture, teal and amber glow, subtle volumetric light beams, high-end cinematic realism",
   },
   clinical_future: {
-    label: "Clinical Future Boston",
+    label: "Clinical Future",
     stylePrompt:
-      "Next-generation Boston medical innovation setting, clean architectural lines, subtle holographic overlays, futuristic retro aquarium color harmony",
+      "Advanced Boston medical innovation campus background, refined glass interiors, clean white-and-blue palette, subtle holographic interfaces, realistic premium conference portrait style",
   },
   beacon_night: {
-    label: "Beacon Night Glow",
+    label: "Beacon Night",
     stylePrompt:
-      "Boston evening cityscape mood with beacon-like glow, premium event atmosphere, cinematic neon warmth, futuristic retro aquarium style treatment",
+      "Boston night skyline with crisp city lights and beacon glow, elegant event portrait mood, balanced contrast, polished editorial finish",
   },
   custom: {
     label: "Custom",
@@ -82,7 +82,7 @@ function buildInstruction({ presetKey, customPrompt, softerStyle = false }) {
 
   const softness = softerStyle
     ? "Apply this style at lower intensity, keep result natural and realistic, avoid over-stylization."
-    : "Apply style strongly but keep realism and likeness.";
+    : "Apply style clearly but keep realism and identity fidelity.";
 
   return `${likenessGuardrail} ${styleTarget} ${softness}`;
 }

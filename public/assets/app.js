@@ -16,14 +16,10 @@ const progressWrap = document.getElementById("progressWrap");
 const statusEl = document.getElementById("status");
 const modelSelect = document.getElementById("modelSelect");
 const softerStyle = document.getElementById("softerStyle");
-const acceptCameraBtn = document.getElementById("acceptCameraBtn");
-const dismissCameraBtn = document.getElementById("dismissCameraBtn");
-const preDisclaimer = document.getElementById("preDisclaimer");
-const openGalleryBtn = document.getElementById("openGalleryBtn");
 const galleryCard = document.getElementById("galleryCard");
 const galleryGrid = document.getElementById("galleryGrid");
+const openGalleryBtn = document.getElementById("openGalleryBtn");
 const clearGalleryBtn = document.getElementById("clearGalleryBtn");
-const closeGalleryBtn = document.getElementById("closeGalleryBtn");
 
 let selectedPreset = "mei_massachusetts";
 let presets = [];
@@ -31,59 +27,46 @@ let capturedBlob = null;
 let outputDataUrl = null;
 let stream = null;
 
-function setStatus(message, kind = "") {
-  statusEl.className = `status ${kind}`;
-  statusEl.textContent = message || "";
-}
-
-function storageKey() {
-  return "mei.photobooth.saved";
-}
-
-function getSaved() {
-  return JSON.parse(localStorage.getItem(storageKey()) || "[]");
-}
-
-function renderGallery() {
+function setStatus(msg) { statusEl.textContent = msg || "Ready"; }
+const key = () => "mei.photobooth.saved";
+const getSaved = () => JSON.parse(localStorage.getItem(key()) || "[]");
+const renderGallery = () => {
   const items = getSaved();
-  galleryGrid.innerHTML = items.map((it) => `<img src="${it.image}" alt="saved" />`).join("");
-}
+  galleryGrid.innerHTML = items.map(it => `<img src="${it.image}" alt="saved"/>`).join("");
+};
 
 function renderPresets() {
   presetGrid.innerHTML = "";
   presets.forEach((p) => {
-    const btn = document.createElement("button");
-    btn.className = `preset ${selectedPreset === p.key ? "active" : ""}`;
-    btn.type = "button";
-    btn.innerHTML = `<img src="${p.thumbnail}" alt="${p.label}" /><div>${p.label}</div>`;
-    btn.onclick = () => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = `preset-pill ${p.key === selectedPreset ? "active" : ""}`;
+    b.textContent = p.label;
+    b.onclick = () => {
       selectedPreset = p.key;
       customPrompt.style.display = selectedPreset === "custom" ? "block" : "none";
       renderPresets();
     };
-    presetGrid.appendChild(btn);
+    presetGrid.appendChild(b);
   });
 }
 
-function updateGenerateAvailability() {
-  const hasSource = !!capturedBlob;
-  generateBtn.disabled = !hasSource;
-  regenerateBtn.disabled = !hasSource;
+function updateAvailability() {
+  const ok = !!capturedBlob;
+  generateBtn.disabled = !ok;
+  regenerateBtn.disabled = !ok;
 }
 
 async function startCamera() {
   try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 1920 } },
-      audio: false,
-    });
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 1920 } }, audio: false });
     video.srcObject = stream;
     video.style.display = "block";
     previewImg.style.display = "none";
     captureBtn.disabled = false;
-    setStatus("Camera ready", "ok");
-  } catch (_err) {
-    setStatus("Camera access denied. You can upload a photo instead.", "err");
+    setStatus("Camera enabled");
+  } catch {
+    setStatus("Camera denied — use upload");
   }
 }
 
@@ -100,38 +83,35 @@ async function captureFromVideo() {
   if (!video.videoWidth || !video.videoHeight) return;
   captureCanvas.width = video.videoWidth;
   captureCanvas.height = video.videoHeight;
-  const ctx = captureCanvas.getContext("2d");
-  ctx.drawImage(video, 0, 0, captureCanvas.width, captureCanvas.height);
+  captureCanvas.getContext("2d").drawImage(video, 0, 0, captureCanvas.width, captureCanvas.height);
   const blob = await new Promise((resolve) => captureCanvas.toBlob(resolve, "image/jpeg", 0.95));
   capturedBlob = blob;
-  const dataUrl = await blobToDataURL(blob);
-  previewImg.src = dataUrl;
+  previewImg.src = await blobToDataURL(blob);
   previewImg.style.display = "block";
   video.style.display = "none";
-  updateGenerateAvailability();
-  setStatus("Selfie captured", "ok");
+  updateAvailability();
+  setStatus("Captured");
 }
 
-function clearAll() {
+function resetAll() {
   capturedBlob = null;
   outputDataUrl = null;
-  previewImg.src = "";
-  resultImg.src = "";
   resultImg.style.display = "none";
-  if (stream) video.style.display = "block";
+  resultImg.src = "";
   previewImg.style.display = "none";
-  updateGenerateAvailability();
+  if (stream) video.style.display = "block";
   downloadBtn.disabled = true;
   saveLocalBtn.disabled = true;
-  setStatus("");
+  updateAvailability();
+  setStatus("Reset");
 }
 
-async function generate(isRegen = false) {
+async function generate(regen = false) {
   if (!capturedBlob) return;
   progressWrap.classList.add("active");
+  setStatus(regen ? "Regenerating…" : "Generating…");
   generateBtn.disabled = true;
   regenerateBtn.disabled = true;
-  setStatus(isRegen ? "Regenerating…" : "Processing started…", "");
 
   const fd = new FormData();
   fd.append("image", capturedBlob, "input.jpg");
@@ -144,19 +124,18 @@ async function generate(isRegen = false) {
   try {
     const resp = await fetch("/api/edit", { method: "POST", body: fd });
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data?.error || "Generation failed");
-
+    if (!resp.ok) throw new Error(data?.error || "Failed");
     outputDataUrl = data.imageBase64;
     resultImg.src = outputDataUrl;
     resultImg.style.display = "block";
     downloadBtn.disabled = false;
     saveLocalBtn.disabled = false;
-    setStatus(`Image ready (${data.modelUsed})`, "ok");
-  } catch (err) {
-    setStatus(err.message || "Failed to process image", "err");
+    setStatus(`Done · ${data.modelUsed}`);
+  } catch (e) {
+    setStatus(e.message || "Error");
   } finally {
     progressWrap.classList.remove("active");
-    updateGenerateAvailability();
+    updateAvailability();
   }
 }
 
@@ -165,21 +144,19 @@ function downloadResult() {
   const a = document.createElement("a");
   a.href = outputDataUrl;
   a.download = `mei-photobooth-${Date.now()}.png`;
-  document.body.appendChild(a);
   a.click();
-  a.remove();
 }
 
 function saveLocal() {
   if (!outputDataUrl) return;
-  const existing = getSaved();
-  existing.unshift({ id: Date.now(), image: outputDataUrl, preset: selectedPreset, model: modelSelect.value });
-  localStorage.setItem(storageKey(), JSON.stringify(existing.slice(0, 24)));
+  const arr = getSaved();
+  arr.unshift({ id: Date.now(), image: outputDataUrl, preset: selectedPreset });
+  localStorage.setItem(key(), JSON.stringify(arr.slice(0, 24)));
   renderGallery();
-  setStatus("Saved locally on this phone/browser", "ok");
+  setStatus("Saved locally");
 }
 
-async function initConfig() {
+async function init() {
   const r = await fetch("/api/config");
   const cfg = await r.json();
   presets = cfg.presets || [];
@@ -191,48 +168,33 @@ async function initConfig() {
     if (m === cfg.defaultModel) o.selected = true;
     modelSelect.appendChild(o);
   });
+  renderGallery();
 }
-
-acceptCameraBtn.onclick = async () => {
-  preDisclaimer.style.display = "none";
-  await startCamera();
-};
-
-dismissCameraBtn.onclick = () => {
-  preDisclaimer.style.display = "none";
-  setStatus("Upload a photo to continue", "ok");
-};
 
 startCameraBtn.onclick = startCamera;
 captureBtn.onclick = captureFromVideo;
-clearBtn.onclick = clearAll;
-generateBtn.onclick = () => generate(false);
-regenerateBtn.onclick = () => generate(true);
-downloadBtn.onclick = downloadResult;
-saveLocalBtn.onclick = saveLocal;
-
-openGalleryBtn.onclick = () => {
-  renderGallery();
-  galleryCard.style.display = "block";
-};
-closeGalleryBtn.onclick = () => (galleryCard.style.display = "none");
-clearGalleryBtn.onclick = () => {
-  localStorage.removeItem(storageKey());
-  renderGallery();
-};
-
 uploadInput.onchange = async (e) => {
   const file = e.target.files?.[0];
   if (!file) return;
   capturedBlob = file;
-  const dataUrl = await blobToDataURL(file);
-  previewImg.src = dataUrl;
+  previewImg.src = await blobToDataURL(file);
   previewImg.style.display = "block";
   video.style.display = "none";
-  updateGenerateAvailability();
-  setStatus("Photo uploaded", "ok");
+  updateAvailability();
+  setStatus("Uploaded");
+};
+clearBtn.onclick = resetAll;
+generateBtn.onclick = () => generate(false);
+regenerateBtn.onclick = () => generate(true);
+downloadBtn.onclick = downloadResult;
+saveLocalBtn.onclick = saveLocal;
+openGalleryBtn.onclick = () => {
+  galleryCard.style.display = galleryCard.style.display === "none" ? "block" : "none";
+  renderGallery();
+};
+clearGalleryBtn.onclick = () => {
+  localStorage.removeItem(key());
+  renderGallery();
 };
 
-initConfig().then(() => {
-  updateGenerateAvailability();
-});
+init();
