@@ -12,9 +12,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = Number(process.env.PORT || 3100);
 
-const AVAILABLE_MODELS = ["qwen-edit"];
-
-const DEFAULT_MODEL = "qwen-edit";
+const AVAILABLE_MODELS = ["grok-imagine"];
+const DEFAULT_MODEL = process.env.VENICE_IMAGE_EDIT_MODEL || "grok-imagine";
+const LANDING_ART_MODEL = process.env.VENICE_LANDING_ART_MODEL || "nano-banana-2";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -24,59 +24,61 @@ const upload = multer({
 });
 
 const PRESETS = {
-  watercolor_boston: {
-    label: "Watercolor Boston",
-    stylePrompt:
-      "Transform into a refined watercolor portrait style with soft brush textures and a tasteful Boston skyline background, pastel palette, artistic paper grain, premium event-poster feel.",
+  mei_banner: {
+    label: "MEI Banner",
+    promptTemplate:
+      "Add a polished, fun MEI event banner reading 'MEI 2026 F2F Meeting' across the top. Keep the people exactly the same. Add colorful nautical accents in the background.",
   },
-  sketch_wave: {
-    label: "Sketch + Wave",
-    stylePrompt:
-      "Convert subject to elegant pencil-and-ink sketch linework while preserving identity, with a watercolor Boston skyline background and the phrase 'MEI Ride the Wave' integrated tastefully.",
+  boston_watercolor: {
+    label: "Watercolor Boston Skyline",
+    promptTemplate:
+      "Place the same people into a watercolor background of the Boston skyline with recognizable Boston landmarks, soft paper texture, and elegant conference vibes.",
   },
-  neon_sign: {
-    label: "Neon Sign",
-    stylePrompt:
-      "Create a vibrant neon-night portrait scene with glowing signage and city ambiance, cinematic magenta-cyan highlights, polished photobooth energy.",
+  funny_caricature: {
+    label: "Funny Caricature",
+    promptTemplate:
+      "Create a funny caricature look with playful exaggeration in expression only, while preserving identity and making sure each person is still clearly recognizable.",
   },
-  aquarium_glow: {
-    label: "Aquarium Glow",
-    stylePrompt:
-      "Place subject in a luminous futuristic aquarium environment with flowing light beams, glass reflections, teal-blue glow, dreamy yet realistic details.",
+  lobsters_flying: {
+    label: "Lobsters Flying",
+    promptTemplate:
+      "Add whimsical flying lobsters around the scene with confetti and nautical energy, while keeping all people unchanged and realistic.",
   },
-  mei_2026_banner: {
-    label: "MEI 2026 Banner",
-    stylePrompt:
-      "Create an event portrait with a clean celebratory top banner reading 'MEI 2026', modern conference styling, balanced lighting, and subtle Boston context.",
+  ride_the_wave: {
+    label: "Ride the Wave",
+    promptTemplate:
+      "Place people in the image riding a dramatic stylized wave with ocean spray and event lighting, keeping faces and body identity intact.",
   },
-  boston_poster: {
-    label: "Boston Poster",
-    stylePrompt:
-      "High-impact editorial poster style portrait with dramatic Boston skyline backdrop, bold composition, crisp contrast, and premium conference branding mood.",
+  neon_clothes: {
+    label: "Neon Outfit Glow",
+    promptTemplate:
+      "Add seamless neon light accents on clothes and accessories, integrated naturally with scene lighting, preserving exact person identity.",
+  },
+  custom_team_banner: {
+    label: "Custom Team Banner",
+    promptTemplate:
+      "Add a top banner with team name '{{TEAM_NAME}}' and include a smaller sign saying 'MEI 2026'. Make it look naturally composited, fun, and conference-ready.",
   },
 };
 
-function buildInstruction({ presetKey, softerStyle = false }) {
-  const preset = PRESETS[presetKey] || PRESETS.watercolor_boston;
+function buildInstruction({ presetKey, teamName = "" }) {
+  const preset = PRESETS[presetKey] || PRESETS.mei_banner;
 
-  const likenessGuardrail = [
-    "CRITICAL IDENTITY REQUIREMENT:",
-    "Preserve the exact identity and likeness of every person in the image.",
-    "Do not change facial structure, skin tone, age impression, body shape, or identity-defining features.",
-    "Keep hairline, eyes, nose, mouth, and overall recognizability faithful to the original.",
-    "Do not beautify or age-shift the subject.",
-    "Only transform styling, wardrobe accents (non-destructive), lighting, and background environment.",
-    "Output should look like the same real person photographed in a new scene.",
+  const identityGuardrail = [
+    "CRITICAL: Do not alter the people themselves.",
+    "Keep the exact same faces, body proportions, skin tones, age, and identity-defining features.",
+    "No face swaps, no person replacement, no age changes, and no beauty filter effects.",
+    "Only modify environment, props, overlays, and artistic style around the original photo.",
+    "The source photo composition and person identity must remain unchanged.",
   ].join(" ");
 
-  const styleTarget = `Preset direction: ${preset.stylePrompt}`;
+  const finalTeamName = String(teamName || "").trim() || "YOUR TEAM NAME";
+  const presetPrompt = preset.promptTemplate.replaceAll("{{TEAM_NAME}}", finalTeamName);
 
-  const softness = softerStyle
-    ? "Apply this style at lower intensity, keep result natural and realistic, avoid over-stylization."
-    : "Apply style clearly but keep realism and identity fidelity.";
-
-  return `${likenessGuardrail} ${styleTarget} ${softness}`;
+  return `${identityGuardrail} Preset direction: ${presetPrompt}`;
 }
+
+let cachedLandingArt = null;
 
 app.use(express.json({ limit: "2mb" }));
 app.use(express.static(path.join(__dirname, "public")));
@@ -90,10 +92,79 @@ app.get("/api/config", (_req, res) => {
     presets: Object.entries(PRESETS).map(([key, value]) => ({
       key,
       label: value.label,
+      prompt: value.promptTemplate,
     })),
     models: AVAILABLE_MODELS,
-    defaultModel: "qwen-edit",
+    defaultModel: DEFAULT_MODEL,
   });
+});
+
+app.get("/api/landing-art", async (_req, res) => {
+  try {
+    if (cachedLandingArt) {
+      return res.json({ imageBase64: cachedLandingArt, cached: true });
+    }
+
+    const apiKey = process.env.VENICE_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: "VENICE_API_KEY missing on server" });
+    }
+
+    const payload = {
+      modelId: LANDING_ART_MODEL,
+      width: 1344,
+      height: 768,
+      prompt:
+        "Fun colorful lobster mascot design for an event landing page. Include a banner that reads 'MEI 2026 F2F Meeting'. Nautical Boston harbor vibe, playful but premium, vibrant blues/cyans/corals/yellows, clean readable composition with room for UI overlays.",
+      format: "png",
+    };
+
+    const veniceResp = await fetch("https://api.venice.ai/api/v1/image/generate", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!veniceResp.ok) {
+      const text = await veniceResp.text();
+      return res.status(veniceResp.status).json({
+        error: "Venice landing-art generate failed",
+        details: text.slice(0, 500),
+      });
+    }
+
+    const contentType = veniceResp.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      const data = await veniceResp.json();
+      const b64 =
+        data?.imageBase64 ||
+        data?.images?.[0]?.base64 ||
+        data?.data?.[0]?.b64_json ||
+        data?.result?.[0]?.base64;
+
+      if (!b64) {
+        return res.status(500).json({ error: "Landing art response did not include base64 image" });
+      }
+
+      cachedLandingArt = `data:image/png;base64,${b64}`;
+      return res.json({ imageBase64: cachedLandingArt, cached: false });
+    }
+
+    const arrBuf = await veniceResp.arrayBuffer();
+    const base64 = Buffer.from(arrBuf).toString("base64");
+    cachedLandingArt = `data:image/png;base64,${base64}`;
+
+    return res.json({ imageBase64: cachedLandingArt, cached: false });
+  } catch (err) {
+    return res.status(500).json({
+      error: "Landing art generation error",
+      details: err instanceof Error ? err.message : "unknown",
+    });
+  }
 });
 
 app.post("/api/edit", upload.single("image"), async (req, res) => {
@@ -107,15 +178,15 @@ app.post("/api/edit", upload.single("image"), async (req, res) => {
       return res.status(400).json({ error: "Image is required" });
     }
 
-    const presetKey = String(req.body.preset || "watercolor_boston");
+    const presetKey = String(req.body.preset || "mei_banner");
+    const teamName = String(req.body.teamName || "");
     const aspectRatio = String(req.body.aspectRatio || "auto");
-    const softerStyle = String(req.body.softerStyle || "false") === "true";
     const requestedModel = String(req.body.modelId || DEFAULT_MODEL);
     const modelId = AVAILABLE_MODELS.includes(requestedModel)
       ? requestedModel
-      : (AVAILABLE_MODELS.includes(DEFAULT_MODEL) ? DEFAULT_MODEL : "qwen-edit");
+      : (AVAILABLE_MODELS.includes(DEFAULT_MODEL) ? DEFAULT_MODEL : "grok-imagine");
 
-    const prompt = buildInstruction({ presetKey, softerStyle });
+    const prompt = buildInstruction({ presetKey, teamName });
 
     const payload = {
       image: req.file.buffer.toString("base64"),
@@ -148,7 +219,7 @@ app.post("/api/edit", upload.single("image"), async (req, res) => {
       imageBase64: `data:image/png;base64,${base64}`,
       presetUsed: presetKey,
       modelUsed: modelId,
-      softerStyle,
+      promptUsed: prompt,
     });
   } catch (err) {
     return res.status(500).json({

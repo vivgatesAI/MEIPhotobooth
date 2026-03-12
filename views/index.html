@@ -7,13 +7,17 @@
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <main class="app-root">
+  <main class="app-root" id="appRoot">
     <section id="welcomeView" class="view active welcome-view">
+      <div class="welcome-backdrop"></div>
       <div class="welcome-card">
-        <img src="/assets/logo.png" alt="MEI" class="welcome-logo" />
+        <div class="logo-wrap">
+          <img src="/assets/logo.png" alt="MEI" class="welcome-logo" />
+          <span class="pill">MEI 2026</span>
+        </div>
         <h1>MEI Photo Booth</h1>
         <p class="script">Boston Medical Engagement & Impact</p>
-        <p class="welcome-copy">Snap or upload a photo and transform it with Venice AI styles.</p>
+        <p class="welcome-copy">Snap or upload and create epic MEI moments with fun nautical vibes.</p>
         <div class="welcome-actions">
           <button id="startBtn" class="btn primary">Take a Photo 🎉</button>
           <label class="btn secondary upload-inline">Upload Photo 📂
@@ -41,18 +45,37 @@
     <section id="previewView" class="view preview-view">
       <div class="preview-shell">
         <img id="resultImg" alt="result" />
+        <div id="splashOverlay" class="splash-overlay hidden">
+          <div class="splash-bubble">
+            <div class="wave-loader">
+              <span></span><span></span><span></span>
+            </div>
+            <h3 id="splashTitle">Cooking up the magic…</h3>
+            <p id="splashMessage">Our lobster artists are adding waves, neon and MEI sparkle.</p>
+          </div>
+        </div>
       </div>
-      <div class="processing" id="progressWrap">
-        <div class="spinner"></div>
-        <span>Applying AI style…</span>
-      </div>
+
       <div class="style-toolbar">
+        <div class="toolbar-head">
+          <h3>Choose a preset (auto-applies)</h3>
+          <span class="muted">Model: grok-imagine</span>
+        </div>
         <div id="presetGrid" class="preset-pills"></div>
+        <label id="teamNameWrap" class="team-name-wrap hidden">
+          Team Name
+          <input id="teamNameInput" type="text" placeholder="Enter your team name" maxlength="48" />
+        </label>
       </div>
+
+      <details class="prompt-panel">
+        <summary>Show all preset prompts</summary>
+        <div id="promptList" class="prompt-list"></div>
+      </details>
+
       <div class="bottom-actions">
         <button id="retakeBtn" class="btn secondary">Retake</button>
-        <button id="generateBtn" class="btn tertiary">Apply Style</button>
-        <button id="downloadBtn" class="btn primary">Save</button>
+        <button id="downloadBtn" class="btn primary">Download Image</button>
       </div>
       <p id="status" class="status">Ready</p>
     </section>
