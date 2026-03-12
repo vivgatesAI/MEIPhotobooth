@@ -12,8 +12,8 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = Number(process.env.PORT || 3100);
 
-const AVAILABLE_MODELS = ["grok-imagine"];
-const DEFAULT_MODEL = process.env.VENICE_IMAGE_EDIT_MODEL || "grok-imagine";
+const AVAILABLE_MODELS = ["grok-imagine-edit"];
+const DEFAULT_MODEL = process.env.VENICE_IMAGE_EDIT_MODEL || "grok-imagine-edit";
 const LANDING_ART_MODEL = process.env.VENICE_LANDING_ART_MODEL || "nano-banana-2";
 
 const upload = multer({
@@ -184,7 +184,7 @@ app.post("/api/edit", upload.single("image"), async (req, res) => {
     const requestedModel = String(req.body.modelId || DEFAULT_MODEL);
     const modelId = AVAILABLE_MODELS.includes(requestedModel)
       ? requestedModel
-      : (AVAILABLE_MODELS.includes(DEFAULT_MODEL) ? DEFAULT_MODEL : "grok-imagine");
+      : (AVAILABLE_MODELS.includes(DEFAULT_MODEL) ? DEFAULT_MODEL : "grok-imagine-edit");
 
     const prompt = buildInstruction({ presetKey, teamName });
 

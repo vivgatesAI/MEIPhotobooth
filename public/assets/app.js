@@ -37,7 +37,7 @@ let sourceBlob = null;
 let outputDataUrl = null;
 let selectedPreset = "mei_banner";
 let presets = [];
-const modelId = "grok-imagine";
+const modelId = "grok-imagine-edit";
 
 const splashLines = [
   { title: "Cooking up the magic…", message: "Our lobster artists are polishing your scene." },
