@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>MEI Photo Booth</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="app">
+    <section class="header">
+      <div class="brand">
+        <img src="/assets/logo.png" alt="logo" />
+        <div>
+          <h1>MEI Photo Booth</h1>
+          <div class="subtitle">Boston · Medical Engagement & Impact</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card notice" id="preDisclaimer">
+      <strong>Before you start:</strong> This app needs camera permission in Safari to take selfies. You may also upload a photo from your iPhone library. By continuing, you consent to image processing and local save on this browser/device.
+      <div class="controls" style="margin-top:10px;grid-template-columns:1fr 1fr">
+        <button id="acceptCameraBtn" class="primary">Accept & Allow Camera</button>
+        <button id="dismissCameraBtn" class="ghost">Upload Instead</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="camera-wrap">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="captureCanvas" style="display:none"></canvas>
+        <img id="previewImg" alt="preview" style="display:none" />
+      </div>
+      <div class="controls">
+        <button id="startCameraBtn" class="primary">Allow Camera</button>
+        <button id="captureBtn" class="ghost" disabled>Take Selfie</button>
+        <label class="file-label">Upload Photo
+          <input id="uploadInput" type="file" accept="image/*" />
+        </label>
+        <button id="clearBtn" class="ghost">Reset</button>
+      </div>
+      <div id="status" class="status"></div>
+    </section>
+
+    <section class="card">
+      <div class="subtitle" style="margin-bottom:8px">Choose preset</div>
+      <div id="presetGrid" class="preset-grid"></div>
+      <textarea id="customPrompt" placeholder="Custom preset: describe background + style..." style="margin-top:8px; display:none"></textarea>
+      <div class="subtitle" style="margin:10px 0 8px">Editing model</div>
+      <select id="modelSelect" class="model-select"></select>
+      <label class="soft-label"><input id="softerStyle" type="checkbox" /> Softer style (more natural)</label>
+    </section>
+
+    <section class="card">
+      <div class="progress-wrap" id="progressWrap">
+        <div class="spinner"></div>
+        <div style="font-size:12px">Processing your image… preserving likeness</div>
+        <div class="wave"></div>
+      </div>
+      <div class="controls" style="grid-template-columns:1fr 1fr">
+        <button id="generateBtn" class="primary" disabled>Generate Styled Photo</button>
+        <button id="regenerateBtn" class="ghost" disabled>Regenerate</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="camera-wrap" style="aspect-ratio: 4 / 5">
+        <img id="resultImg" alt="result" style="display:none" />
+      </div>
+      <div class="result-actions">
+        <button id="downloadBtn" class="ghost" disabled>Download</button>
+        <button id="saveLocalBtn" class="primary" disabled>Save Locally</button>
+      </div>
+      <div class="controls" style="grid-template-columns:1fr">
+        <button id="openGalleryBtn" class="ghost">View Saved Photos</button>
+      </div>
+    </section>
+
+    <section class="card" id="galleryCard" style="display:none">
+      <div class="subtitle" style="margin-bottom:8px">My Saved Photos</div>
+      <div id="galleryGrid" class="gallery-grid"></div>
+      <div class="controls" style="grid-template-columns:1fr 1fr; margin-top:10px">
+        <button id="clearGalleryBtn" class="ghost">Clear Saved</button>
+        <button id="closeGalleryBtn" class="primary">Close</button>
+      </div>
+    </section>
+
+    <section class="footer">
+      After processing: image style/background is transformed while identity should remain the same. You can clear saved local images on this device anytime in browser settings.
+    </section>
+  </main>
+
+  <script src="/assets/app.js"></script>
+</body>
+</html>
