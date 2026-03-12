@@ -43,41 +43,45 @@
     </section>
 
     <section id="previewView" class="view preview-view">
-      <div class="preview-shell">
-        <img id="resultImg" alt="result" />
-        <div id="splashOverlay" class="splash-overlay hidden">
-          <div class="splash-bubble">
-            <div class="wave-loader">
-              <span></span><span></span><span></span>
+      <div class="edit-page-wrap">
+        <div class="preview-stage-card">
+          <button id="previewHomeBtn" class="chip-home">🏠 Home</button>
+          <div class="preview-shell portrait-shell">
+            <img id="resultImg" alt="result" />
+            <div id="splashOverlay" class="splash-overlay hidden">
+              <div class="splash-bubble">
+                <div class="wave-loader">
+                  <span></span><span></span><span></span>
+                </div>
+                <h3 id="splashTitle">Cooking up the magic…</h3>
+                <p id="splashMessage">Our lobster artists are adding waves, neon and MEI sparkle.</p>
+              </div>
             </div>
-            <h3 id="splashTitle">Cooking up the magic…</h3>
-            <p id="splashMessage">Our lobster artists are adding waves, neon and MEI sparkle.</p>
           </div>
         </div>
-      </div>
 
-      <div class="style-toolbar">
-        <div class="toolbar-head">
-          <h3>Choose a preset (auto-applies)</h3>
-          <span class="muted">Model: grok-imagine-edit</span>
+        <div class="ai-style-bar">
+          <button id="randomPresetBtn" class="mini-round">⟳</button>
+          <div class="ai-style-label">✦ Add an AI Style</div>
+          <div class="mini-emoji">🦞</div>
         </div>
-        <div id="presetGrid" class="preset-pills"></div>
-        <label id="teamNameWrap" class="team-name-wrap hidden">
-          Team Name
-          <input id="teamNameInput" type="text" placeholder="Enter your team name" maxlength="48" />
-        </label>
-      </div>
 
-      <details class="prompt-panel">
-        <summary>Show all preset prompts</summary>
-        <div id="promptList" class="prompt-list"></div>
-      </details>
+        <div class="style-toolbar sleek-toolbar">
+          <div id="presetGrid" class="preset-pills grid-two"></div>
+          <label id="teamNameWrap" class="team-name-wrap hidden">
+            Team Name
+            <input id="teamNameInput" type="text" placeholder="Enter your team name" maxlength="48" />
+          </label>
+        </div>
 
-      <div class="bottom-actions">
-        <button id="retakeBtn" class="btn secondary">Retake</button>
-        <button id="downloadBtn" class="btn primary">Download Image</button>
+        <button id="downloadBtn" class="save-share-btn">⬇ Save and share with MEI Team</button>
+        <p id="status" class="status">Ready · Model: grok-imagine-edit</p>
+
+        <details class="prompt-panel">
+          <summary>Show all preset prompts</summary>
+          <div id="promptList" class="prompt-list"></div>
+        </details>
       </div>
-      <p id="status" class="status">Ready</p>
     </section>
 
     <section id="consentModal" class="modal hidden">

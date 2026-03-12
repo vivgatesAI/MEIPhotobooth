@@ -8,6 +8,7 @@ const startBtn = document.getElementById("startBtn");
 const agreeConsentBtn = document.getElementById("agreeConsentBtn");
 const cancelConsentBtn = document.getElementById("cancelConsentBtn");
 const homeBtn = document.getElementById("homeBtn");
+const previewHomeBtn = document.getElementById("previewHomeBtn");
 
 const video = document.getElementById("video");
 const captureCanvas = document.getElementById("captureCanvas");
@@ -15,8 +16,8 @@ const previewImg = document.getElementById("previewImg");
 const resultImg = document.getElementById("resultImg");
 
 const captureBtn = document.getElementById("captureBtn");
-const retakeBtn = document.getElementById("retakeBtn");
 const downloadBtn = document.getElementById("downloadBtn");
+const randomPresetBtn = document.getElementById("randomPresetBtn");
 
 const uploadInput = document.getElementById("uploadInput");
 const uploadFromWelcome = document.getElementById("uploadFromWelcome");
@@ -46,12 +47,18 @@ const splashLines = [
 ];
 
 function setStatus(m) {
-  statusEl.textContent = m || "Ready";
+  statusEl.textContent = m || `Ready · Model: ${modelId}`;
 }
 
 function show(v) {
   [welcomeView, cameraView, previewView].forEach((el) => el.classList.remove("active"));
   v.classList.add("active");
+}
+
+function goHome() {
+  stopCamera();
+  show(welcomeView);
+  setStatus(`Ready · Model: ${modelId}`);
 }
 
 function setLandingBackground(dataUrl) {
@@ -96,6 +103,16 @@ function renderPresets() {
   });
 }
 
+function pickRandomPreset() {
+  if (!presets.length) return;
+  const pool = presets.filter((p) => p.key !== selectedPreset);
+  const next = pool[Math.floor(Math.random() * pool.length)] || presets[0];
+  selectedPreset = next.key;
+  renderPresets();
+  teamNameWrap.classList.toggle("hidden", selectedPreset !== "custom_team_banner");
+  if (sourceBlob) applyStyle();
+}
+
 async function loadConfig() {
   try {
     const resp = await fetch("/api/config");
@@ -105,6 +122,7 @@ async function loadConfig() {
       if (!presets.some((p) => p.key === selectedPreset)) selectedPreset = presets[0].key;
       renderPresets();
       renderPrompts();
+      setStatus(`Ready · Model: ${modelId}`);
     }
   } catch {
     setStatus("Could not load presets");
@@ -161,7 +179,7 @@ async function capturePhoto() {
   outputDataUrl = dataUrl;
   resultImg.src = dataUrl;
   show(previewView);
-  setStatus("Captured. Tap a preset to apply.");
+  setStatus("Captured. Tap a style to apply.");
 }
 
 async function setUploadAsSource(file) {
@@ -170,7 +188,7 @@ async function setUploadAsSource(file) {
   outputDataUrl = dataUrl;
   resultImg.src = dataUrl;
   show(previewView);
-  setStatus("Uploaded. Tap a preset to apply.");
+  setStatus("Uploaded. Tap a style to apply.");
 }
 
 function showSplash() {
@@ -224,16 +242,11 @@ agreeConsentBtn.onclick = async () => {
   await enableCamera();
 };
 cancelConsentBtn.onclick = () => consentModal.classList.add("hidden");
-homeBtn.onclick = () => {
-  stopCamera();
-  show(welcomeView);
-};
+homeBtn.onclick = goHome;
+previewHomeBtn.onclick = goHome;
 captureBtn.onclick = capturePhoto;
-retakeBtn.onclick = async () => {
-  if (stream) show(cameraView);
-  else show(welcomeView);
-};
 downloadBtn.onclick = downloadCurrent;
+randomPresetBtn.onclick = pickRandomPreset;
 
 uploadInput.onchange = async (e) => {
   const f = e.target.files?.[0];
