@@ -333,12 +333,43 @@ async function applyStyleWithCustomPrompt(promptText) {
 
 /* ── Download ── */
 
-function downloadCurrent() {
+async function downloadCurrent() {
   if (!outputDataUrl) return;
-  const a = document.createElement("a");
-  a.href = outputDataUrl;
-  a.download = `mei-photobooth-${Date.now()}.png`;
-  a.click();
+
+  const fileName = `mei-photobooth-${Date.now()}.png`;
+
+  try {
+    const imgResp = await fetch(outputDataUrl);
+    const blob = await imgResp.blob();
+    const file = new File([blob], fileName, { type: blob.type || "image/png" });
+
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: "MEI Photo Booth",
+        text: "My MEI Photo Booth photo",
+      });
+      setStatus("Opened share options. Save to Photos or send it.");
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = objectUrl;
+    a.download = fileName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+  } catch (e) {
+    if (e?.name === "AbortError") {
+      setStatus("Share canceled.");
+      return;
+    }
+
+    const a = document.createElement("a");
+    a.href = outputDataUrl;
+    a.download = fileName;
+    a.click();
+  }
 }
 
 /* ── Secret Easter Egg — single click ── */
