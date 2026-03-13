@@ -12,10 +12,10 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = Number(process.env.PORT || 3100);
 
-const DEFAULT_MODEL = process.env.VENICE_IMAGE_EDIT_MODEL || "qwen-image-2-edit";
+const DEFAULT_MODEL = process.env.VENICE_IMAGE_EDIT_MODEL || "qwen-edit";
 
 const MODELS = {
-  "qwen-image-2-edit":    { name: "Qwen Image 2",    price: 0.05, ratios: ["1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
+  "qwen-edit":            { name: "Qwen Edit",        price: 0.04, ratios: ["auto","1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
   "grok-imagine-edit":    { name: "Grok Imagine",     price: 0.04, ratios: ["auto","1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
   "nano-banana-2-edit":   { name: "Nano Banana 2",    price: 0.10, ratios: ["auto","1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
   "nano-banana-pro-edit": { name: "Nano Banana Pro",   price: 0.18, ratios: ["auto","1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
