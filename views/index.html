@@ -90,7 +90,7 @@
         <div class="pv-header">
           <button id="previewHomeBtn" class="btn-round" title="Back to Home">⚓</button>
           <h2 class="pv-title">Choose Your Adventure</h2>
-          <div class="pv-spacer"></div>
+          <button id="settingsBtn" class="btn-round" title="Settings">⚙️</button>
         </div>
 
         <div class="pv-photo">
@@ -135,6 +135,22 @@
         <div class="modal-btns">
           <button id="cancelTeamBtn" class="btn btn-ghost">Cancel</button>
           <button id="confirmTeamBtn" class="btn btn-primary">Raise the Banner!</button>
+        </div>
+        <div class="modal-rope"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════ SETTINGS MODAL ═══════════ -->
+    <section id="settingsModal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-card settings-card">
+        <div class="modal-rope"></div>
+        <div class="modal-emoji">⚙️</div>
+        <h3 class="modal-heading">Settings</h3>
+        <p class="modal-sub">Choose your AI engine</p>
+        <div id="modelList" class="model-list"></div>
+        <div class="modal-btns">
+          <button id="closeSettingsBtn" class="btn btn-primary">Done</button>
         </div>
         <div class="modal-rope"></div>
       </div>

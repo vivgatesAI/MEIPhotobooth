@@ -9,6 +9,7 @@ const cameraView    = $("cameraView");
 const previewView   = $("previewView");
 const consentModal  = $("consentModal");
 const teamModal     = $("teamModal");
+const settingsModal = $("settingsModal");
 
 const startBtn         = $("startBtn");
 const agreeConsentBtn  = $("agreeConsentBtn");
@@ -16,6 +17,8 @@ const cancelConsentBtn = $("cancelConsentBtn");
 const homeBtn          = $("homeBtn");
 const previewHomeBtn   = $("previewHomeBtn");
 const flipBtn          = $("flipBtn");
+const settingsBtn      = $("settingsBtn");
+const closeSettingsBtn = $("closeSettingsBtn");
 
 const video         = $("video");
 const captureCanvas = $("captureCanvas");
@@ -32,6 +35,7 @@ const presetGrid    = $("presetGrid");
 const teamNameInput = $("teamNameInput");
 const cancelTeamBtn = $("cancelTeamBtn");
 const confirmTeamBtn = $("confirmTeamBtn");
+const modelList     = $("modelList");
 
 const splashOverlay = $("splashOverlay");
 const splashTitle   = $("splashTitle");
@@ -44,9 +48,10 @@ let stream = null;
 let sourceBlob = null;
 let outputDataUrl = null;
 let selectedPreset = "lobster_dock";
+let selectedModel = "grok-imagine-edit";
 let presets = [];
+let models = [];
 let facingMode = "user";
-const modelId = "grok-imagine-edit";
 
 const splashLines = [
   { title: "Cooking up the magic…",  message: "Our lobster artists are polishing your scene." },
@@ -105,6 +110,33 @@ function hideTeamModal() {
   teamModal.classList.add("hidden");
 }
 
+/* ── Settings / Model Picker ── */
+
+function renderModels() {
+  modelList.innerHTML = "";
+  models.forEach((m) => {
+    const opt = document.createElement("div");
+    opt.className = `model-option${m.id === selectedModel ? " active" : ""}`;
+    opt.innerHTML = `<span class="model-dot"></span><span class="model-name">${m.name}</span><span class="model-price">$${m.price.toFixed(2)}</span>`;
+    opt.onclick = () => {
+      selectedModel = m.id;
+      renderModels();
+    };
+    modelList.appendChild(opt);
+  });
+}
+
+function showSettings() {
+  renderModels();
+  settingsModal.classList.remove("hidden");
+}
+
+function hideSettings() {
+  settingsModal.classList.add("hidden");
+}
+
+/* ── Config ── */
+
 async function loadConfig() {
   try {
     const resp = await fetch("/api/config");
@@ -113,8 +145,12 @@ async function loadConfig() {
       presets = data.presets;
       if (!presets.some((p) => p.key === selectedPreset)) selectedPreset = presets[0].key;
       renderPresets();
-      setStatus("Ready · Choose a style above");
     }
+    if (Array.isArray(data?.models) && data.models.length) {
+      models = data.models;
+      if (data.defaultModel) selectedModel = data.defaultModel;
+    }
+    setStatus("Ready · Choose a style above");
   } catch {
     setStatus("Could not load presets");
   }
@@ -136,7 +172,7 @@ async function enableCamera() {
     previewImg.style.display = "none";
     video.style.display = "";
     show(cameraView);
-    setStatus("Camera ready");
+    setStatus("");
   } catch (err) {
     console.error("Camera error:", err);
     setStatus("Camera unavailable — please upload a photo.");
@@ -214,12 +250,12 @@ function hideSplash() {
 async function applyStyle() {
   if (!sourceBlob) return;
   showSplash();
-  setStatus("Applying style…");
+  setStatus("Creating your photo…");
 
   const fd = new FormData();
   fd.append("image", sourceBlob, "input.jpg");
   fd.append("preset", selectedPreset);
-  fd.append("modelId", modelId);
+  fd.append("modelId", selectedModel);
   fd.append("teamName", (teamNameInput?.value || "").trim());
   fd.append("aspectRatio", window.innerHeight > window.innerWidth ? "4:5" : "16:9");
 
@@ -229,9 +265,9 @@ async function applyStyle() {
     if (!resp.ok) throw new Error(data?.error || "Edit failed");
     outputDataUrl = data.imageBase64;
     resultImg.src = outputDataUrl;
-    setStatus(`Done: ${data.presetUsed} via ${data.modelUsed}`);
+    setStatus("Your photo is ready! Download or try another style.");
   } catch (e) {
-    setStatus(e.message || "Error applying style");
+    setStatus(e.message || "Something went wrong — try again.");
   } finally {
     hideSplash();
   }
@@ -247,29 +283,19 @@ function downloadCurrent() {
   a.click();
 }
 
-/* ── Secret Easter Egg ── */
-
-let secretTaps = 0;
-let secretTimer = null;
+/* ── Secret Easter Egg — single click ── */
 
 function handleSecretLobster() {
-  secretTaps++;
-  clearTimeout(secretTimer);
-  if (secretTaps >= 3) {
-    secretTaps = 0;
-    secretLobster.style.transition = "all .3s";
-    secretLobster.style.opacity = "1";
-    secretLobster.style.transform = "scale(2)";
-    setTimeout(() => {
-      secretLobster.style.opacity = "";
-      secretLobster.style.transform = "";
-    }, 600);
-    selectedPreset = "ai_future";
-    renderPresets();
-    if (sourceBlob) applyStyle();
-  } else {
-    secretTimer = setTimeout(() => { secretTaps = 0; }, 800);
-  }
+  secretLobster.style.transition = "all .3s";
+  secretLobster.style.opacity = "1";
+  secretLobster.style.transform = "scale(2)";
+  setTimeout(() => {
+    secretLobster.style.opacity = "";
+    secretLobster.style.transform = "";
+  }, 600);
+  selectedPreset = "ai_future";
+  renderPresets();
+  if (sourceBlob) applyStyle();
 }
 
 /* ── Event Bindings ── */
@@ -288,6 +314,9 @@ previewHomeBtn.onclick = goHome;
 flipBtn.onclick = flipCamera;
 captureBtn.onclick = capturePhoto;
 downloadBtn.onclick = downloadCurrent;
+
+settingsBtn.onclick = showSettings;
+closeSettingsBtn.onclick = hideSettings;
 
 uploadInput.onchange = async (e) => {
   const f = e.target.files?.[0];

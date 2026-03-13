@@ -12,8 +12,20 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = Number(process.env.PORT || 3100);
 
-const AVAILABLE_MODELS = ["grok-imagine-edit"];
 const DEFAULT_MODEL = process.env.VENICE_IMAGE_EDIT_MODEL || "grok-imagine-edit";
+
+const MODELS = {
+  "grok-imagine-edit":      { name: "Grok Imagine",      price: 0.04, ratios: ["auto","1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
+  "qwen-edit":              { name: "Qwen Edit",          price: 0.04, ratios: ["auto","1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
+  "qwen-image-2-edit":      { name: "Qwen Image 2",       price: 0.05, ratios: ["1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
+  "seedream-v4-edit":       { name: "SeedreamV4.5",       price: 0.05, ratios: ["auto","1:1","3:2","16:9","9:16","2:3","3:4","4:5"] },
+  "seedream-v5-lite-edit":  { name: "SeedreamV5 Lite",    price: 0.05, ratios: ["auto","1:1","3:2","16:9","9:16","2:3","3:4","4:5"] },
+  "flux-2-max-edit":        { name: "Flux 2 Max",         price: 0.09, ratios: ["auto","1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
+  "qwen-image-2-pro-edit":  { name: "Qwen Image 2 Pro",   price: 0.10, ratios: ["1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
+  "nano-banana-2-edit":     { name: "Nano Banana 2",      price: 0.10, ratios: ["auto","1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
+  "nano-banana-pro-edit":   { name: "Nano Banana Pro",    price: 0.18, ratios: ["auto","1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
+  "gpt-image-1-5-edit":     { name: "GPT Image 1.5",      price: 0.36, ratios: ["auto","1:1","3:2","2:3"] },
+};
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -26,65 +38,53 @@ const PRESETS = {
   lobster_dock: {
     label: "Lobster Dock",
     icon: "🦞",
-    promptTemplate:
-      "Portrait photo of the subject with their exact face, features, and likeness perfectly preserved, standing on a rustic New England lobster dock at golden hour. Fun colorful cartoon-style lobsters are scattered in the background — some peeking from behind lobster traps, some waving claws, some wearing tiny captain hats. Colorful lobster traps stacked nearby, calm harbor water reflecting warm sunlight, classic lobster boats in the distance, cinematic lighting, ultra detailed, vibrant maritime colors, joyful atmosphere, high-end photography blended with whimsical cartoon lobster characters",
+    prompt: "Photo of the person on a New England lobster dock at golden hour. Fun cartoon lobsters in the background — peeking from traps, waving claws, wearing tiny captain hats. Lobster traps, harbor boats, warm cinematic lighting, vibrant colors.",
   },
   watercolor_boston: {
     label: "Watercolor Boston",
     icon: "🎨",
-    promptTemplate:
-      "Elegant watercolor painting portrait of the subject with their exact face, features, and likeness perfectly preserved, rendered in beautiful watercolor style. The background is the iconic Boston skyline — the Zakim Bridge, Custom House Clock Tower, and harbor sailboats — all painted in soft impressionistic watercolor brush strokes. Palette of cerulean blues, warm amber sunset tones, and soft coral accents. Artistic paper texture, warm sunlight, dreamy seaside atmosphere, the subject smiling warmly, whimsical and beautiful",
+    prompt: "Watercolor painting of the person with the Boston skyline behind them — Zakim Bridge, Custom House Tower, harbor sailboats. Soft pastel watercolor brush strokes, warm amber sunset, dreamy atmosphere, smiling warmly.",
   },
   hand_caricature: {
     label: "Caricature",
     icon: "✏️",
-    promptTemplate:
-      "Hand-painted caricature illustration of the subject preserving their exact face likeness and recognizable features with playful proportions and expressive details, standing in a vibrant New England lobster harbor full of fishing boats, lobster traps, ropes, and colorful buoys, bright cheerful colors, textured brush painting style, fun exaggerated expression, joyful personality, subject smiling brightly",
+    prompt: "Hand-painted caricature of the person with playful exaggerated proportions. New England lobster harbor background, fishing boats, lobster traps, colorful buoys. Bright cheerful colors, fun expression, smiling brightly.",
   },
   hollywood_poster: {
     label: "Movie Poster",
     icon: "🎬",
-    promptTemplate:
-      "Dramatic Hollywood movie poster portrait of the subject with their exact face, features, and likeness perfectly preserved. Cinematic dramatic lighting, epic blockbuster style, bold saturated colors, shallow depth of field, heroic confident pose. The movie title 'MEI 2026' displayed prominently in bold cinematic metallic lettering at the bottom of the poster. Film grain texture, dramatic stormy sky background, lens flare, professional movie poster composition, award-winning photography",
+    prompt: "Dramatic Hollywood movie poster of the person. Cinematic lighting, bold colors, shallow depth of field, heroic pose. Title 'MEI 2026' in bold cinematic metallic lettering at the bottom. Film grain, dramatic sky, lens flare.",
   },
   pixar_3d: {
     label: "Pixar 3D",
     icon: "🧸",
-    promptTemplate:
-      "3D animated cartoon character portrait of the subject with their exact face likeness and recognizable features faithfully translated into Pixar-style 3D animation. Smooth stylized skin, large expressive eyes that match the subject's real eyes, vibrant colors, Pixar studio quality lighting with soft rim light and warm key light, playful colorful background with depth of field, cheerful happy expression, ultra detailed 3D render, Disney Pixar movie quality character",
+    prompt: "Pixar-style 3D animated cartoon character version of the person. Smooth stylized skin, large expressive eyes, vibrant colors, Pixar studio lighting, playful colorful background, cheerful expression.",
   },
   team_banner: {
     label: "Team Banner",
     icon: "🚩",
-    promptTemplate:
-      "Portrait of the subject with their exact face, features, and likeness perfectly preserved. A large elegant maritime banner is placed behind them displaying the team name '{{TEAM_NAME}}' in beautiful classic nautical gold serif lettering on a navy blue ribbon with rope borders, and 'MEI 2026' in smaller elegant font below. Clean professional event photography background with soft bokeh, warm celebratory lighting, the subject is the clear focus of the image, no extra people added",
+    prompt: "The person with a large maritime banner behind them showing '{{TEAM_NAME}}' in gold nautical lettering on a navy ribbon, 'MEI 2026' below. Clean event photography, warm lighting, no extra people.",
   },
   ai_future: {
     label: "AI Future",
     icon: "🤖",
-    promptTemplate:
-      "The subject with their exact face, features, and likeness perfectly preserved standing in a futuristic cyberpunk coastal city filled with advanced AI technology. Glowing neon buildings, holographic ocean waves, robotic lobster drones flying overhead, neon lights reflecting off wet streets, vibrant sci-fi atmosphere, dramatic lighting, highly detailed futuristic world. A glowing neon sign reads: 'Made with ❤️ by Medical AI'.",
+    prompt: "The person in a futuristic cyberpunk coastal city. Neon buildings, holographic ocean waves, robotic lobster drones flying overhead, neon reflections on wet streets. Glowing neon sign reads 'Made with ❤️ by Medical AI'.",
   },
 };
 
-function buildInstruction({ presetKey, teamName = "" }) {
+function getSafeAspectRatio(requested, modelId) {
+  const model = MODELS[modelId];
+  if (!model) return "auto";
+  if (model.ratios.includes(requested)) return requested;
+  const fallbacks = ["4:5", "3:4", "auto", "1:1"];
+  return fallbacks.find((r) => model.ratios.includes(r)) || model.ratios[0];
+}
+
+function buildPrompt({ presetKey, teamName = "" }) {
   const preset = PRESETS[presetKey];
-  if (!preset) {
-    return "Transform this image with a fun nautical theme while keeping the person completely unchanged.";
-  }
-
-  const identityGuardrail = [
-    "CRITICAL INSTRUCTION: The person's FACE and LIKENESS must remain COMPLETELY UNCHANGED and perfectly recognizable.",
-    "Preserve exact facial features, face shape, expression, body proportions, skin tone, age, hair, and all identity features.",
-    "NO face swaps, NO person replacement, NO age changes, NO beauty filters, NO altering facial structure.",
-    "The output image must look unmistakably like the same person from the input photo.",
-    "Only modify the environment, background, lighting, and artistic style around the person.",
-  ].join(" ");
-
+  if (!preset) return "Transform this photo with a fun nautical coastal theme.";
   const finalTeamName = String(teamName || "").trim() || "YOUR TEAM";
-  const presetPrompt = preset.promptTemplate.replaceAll("{{TEAM_NAME}}", finalTeamName);
-
-  return `${identityGuardrail} CREATIVE DIRECTION: ${presetPrompt}`;
+  return preset.prompt.replaceAll("{{TEAM_NAME}}", finalTeamName);
 }
 
 app.use(express.json({ limit: "2mb" }));
@@ -101,12 +101,17 @@ app.get("/api/config", (_req, res) => {
       key,
       label: value.label,
       icon: value.icon,
-      prompt: value.promptTemplate,
     }));
+
+  const models = Object.entries(MODELS).map(([id, m]) => ({
+    id,
+    name: m.name,
+    price: m.price,
+  }));
 
   res.json({
     presets: publicPresets,
-    models: AVAILABLE_MODELS,
+    models,
     defaultModel: DEFAULT_MODEL,
   });
 });
@@ -117,22 +122,18 @@ app.post("/api/edit", upload.single("image"), async (req, res) => {
     if (!apiKey) {
       return res.status(500).json({ error: "VENICE_API_KEY missing on server" });
     }
-
     if (!req.file) {
       return res.status(400).json({ error: "Image is required" });
     }
 
     const presetKey = String(req.body.preset || "lobster_dock");
     const teamName = String(req.body.teamName || "");
-    const aspectRatio = String(req.body.aspectRatio || "auto");
+    const requestedRatio = String(req.body.aspectRatio || "auto");
     const requestedModel = String(req.body.modelId || DEFAULT_MODEL);
-    const modelId = AVAILABLE_MODELS.includes(requestedModel)
-      ? requestedModel
-      : AVAILABLE_MODELS.includes(DEFAULT_MODEL)
-        ? DEFAULT_MODEL
-        : "grok-imagine-edit";
+    const modelId = MODELS[requestedModel] ? requestedModel : DEFAULT_MODEL;
+    const aspectRatio = getSafeAspectRatio(requestedRatio, modelId);
 
-    const prompt = buildInstruction({ presetKey, teamName });
+    const prompt = buildPrompt({ presetKey, teamName });
 
     const payload = {
       image: req.file.buffer.toString("base64"),
@@ -164,8 +165,6 @@ app.post("/api/edit", upload.single("image"), async (req, res) => {
     return res.json({
       imageBase64: `data:image/png;base64,${base64}`,
       presetUsed: presetKey,
-      modelUsed: modelId,
-      promptUsed: prompt,
     });
   } catch (err) {
     return res.status(500).json({
