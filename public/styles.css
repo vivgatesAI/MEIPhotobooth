@@ -344,19 +344,6 @@ img{display:block;max-width:100%}
   color:rgba(11,37,69,.5);flex-shrink:0;min-height:18px;
 }
 
-/* Corner buttons (custom prompt + secret lobster) */
-.pv-corner-btn{
-  position:absolute;bottom:8px;
-  appearance:none;border:none;background:transparent;
-  font-size:16px;opacity:.3;cursor:pointer;
-  transition:all .3s ease;user-select:none;z-index:2;
-  width:36px;height:36px;display:flex;align-items:center;justify-content:center;
-  border-radius:50%;
-}
-.pv-corner-btn:hover{opacity:.6;transform:scale(1.15);background:rgba(11,37,69,.06)}
-.pv-corner-btn:active{transform:scale(.95)}
-.pv-corner-left{left:12px}
-
 .secret-lobster{
   position:absolute;bottom:8px;right:12px;
   font-size:16px;opacity:.25;cursor:pointer;

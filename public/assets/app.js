@@ -359,7 +359,7 @@ function handleSecretLobster() {
 /* ── Retake ── */
 
 async function handleRetake() {
-  consentModal.classList.remove("hidden");
+  await enableCamera();
 }
 
 /* ── Event Bindings ── */
