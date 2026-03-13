@@ -125,17 +125,22 @@ async function loadConfig() {
 async function enableCamera() {
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+      video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
       audio: false,
     });
     video.srcObject = stream;
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+    await video.play();
     captureBtn.disabled = false;
     previewImg.style.display = "none";
-    video.style.display = "block";
+    video.style.display = "";
     show(cameraView);
     setStatus("Camera ready");
-  } catch {
+  } catch (err) {
+    console.error("Camera error:", err);
     setStatus("Camera unavailable — please upload a photo.");
+    show(cameraView);
   }
 }
 

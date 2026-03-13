@@ -35,9 +35,10 @@ img{display:block;max-width:100%}
    WELCOME VIEW
    ═══════════════════════════════════════════ */
 .welcome-view{
-  align-items:center;justify-content:center;padding:24px;
+  align-items:center;justify-content:center;
+  padding:24px;padding-bottom:max(24px,env(safe-area-inset-bottom));
   background:radial-gradient(ellipse at 50% 20%,#0e3d5e 0%,var(--navy) 40%,var(--navy-deep) 80%);
-  position:relative;overflow:hidden;
+  overflow:hidden;
 }
 
 /* Animated ocean waves */
@@ -54,8 +55,9 @@ img{display:block;max-width:100%}
 /* Content */
 .welcome-content{
   position:relative;z-index:1;
-  display:flex;flex-direction:column;align-items:center;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
   max-width:520px;width:100%;text-align:center;gap:6px;
+  margin:auto;
 }
 
 /* Rope divider */
@@ -133,7 +135,7 @@ img{display:block;max-width:100%}
 /* ═══════════════════════════════════════════
    CAMERA VIEW — Full-screen live preview
    ═══════════════════════════════════════════ */
-.camera-view{position:relative;background:#000;padding:0}
+.camera-view{background:#000;padding:0}
 
 .camera-view>video,
 .camera-view>#previewImg{
@@ -145,7 +147,8 @@ img{display:block;max-width:100%}
   position:absolute;inset:0;z-index:2;
   display:flex;flex-direction:column;justify-content:space-between;
   pointer-events:none;
-  padding:env(safe-area-inset-top,12px) env(safe-area-inset-right,12px) env(safe-area-inset-bottom,12px) env(safe-area-inset-left,12px);
+  padding:12px;
+  padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));
 }
 .cam-overlay>*{pointer-events:auto}
 
@@ -329,11 +332,11 @@ img{display:block;max-width:100%}
 
 /* Secret lobster easter egg */
 .secret-lobster{
-  position:absolute;bottom:6px;right:10px;
-  font-size:11px;opacity:.12;cursor:default;
-  transition:opacity .4s;user-select:none;z-index:2;
+  position:absolute;bottom:8px;right:12px;
+  font-size:16px;opacity:.25;cursor:pointer;
+  transition:all .3s ease;user-select:none;z-index:2;
 }
-.secret-lobster:hover{opacity:.28}
+.secret-lobster:hover{opacity:.5;transform:scale(1.2)}
 
 /* ═══════════════════════════════════════════
    MODALS
