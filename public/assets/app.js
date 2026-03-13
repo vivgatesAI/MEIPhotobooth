@@ -1,116 +1,108 @@
-const appRoot = document.getElementById("appRoot");
-const welcomeView = document.getElementById("welcomeView");
-const cameraView = document.getElementById("cameraView");
-const previewView = document.getElementById("previewView");
-const consentModal = document.getElementById("consentModal");
+/* ═══════════════════════════════════════════
+   MEI AI Photo Booth 2026 — App Logic
+   ═══════════════════════════════════════════ */
 
-const startBtn = document.getElementById("startBtn");
-const agreeConsentBtn = document.getElementById("agreeConsentBtn");
-const cancelConsentBtn = document.getElementById("cancelConsentBtn");
-const homeBtn = document.getElementById("homeBtn");
-const previewHomeBtn = document.getElementById("previewHomeBtn");
+const $ = (id) => document.getElementById(id);
 
-const video = document.getElementById("video");
-const captureCanvas = document.getElementById("captureCanvas");
-const previewImg = document.getElementById("previewImg");
-const resultImg = document.getElementById("resultImg");
+const welcomeView   = $("welcomeView");
+const cameraView    = $("cameraView");
+const previewView   = $("previewView");
+const consentModal  = $("consentModal");
+const teamModal     = $("teamModal");
 
-const captureBtn = document.getElementById("captureBtn");
-const downloadBtn = document.getElementById("downloadBtn");
-const randomPresetBtn = document.getElementById("randomPresetBtn");
+const startBtn         = $("startBtn");
+const agreeConsentBtn  = $("agreeConsentBtn");
+const cancelConsentBtn = $("cancelConsentBtn");
+const homeBtn          = $("homeBtn");
+const previewHomeBtn   = $("previewHomeBtn");
+const flipBtn          = $("flipBtn");
 
-const uploadInput = document.getElementById("uploadInput");
-const uploadFromWelcome = document.getElementById("uploadFromWelcome");
+const video         = $("video");
+const captureCanvas = $("captureCanvas");
+const previewImg    = $("previewImg");
+const resultImg     = $("resultImg");
 
-const presetGrid = document.getElementById("presetGrid");
-const promptList = document.getElementById("promptList");
-const teamNameWrap = document.getElementById("teamNameWrap");
-const teamNameInput = document.getElementById("teamNameInput");
+const captureBtn  = $("captureBtn");
+const downloadBtn = $("downloadBtn");
 
-const splashOverlay = document.getElementById("splashOverlay");
-const splashTitle = document.getElementById("splashTitle");
-const splashMessage = document.getElementById("splashMessage");
+const uploadInput       = $("uploadInput");
+const uploadFromWelcome = $("uploadFromWelcome");
 
-const statusEl = document.getElementById("status");
+const presetGrid    = $("presetGrid");
+const teamNameInput = $("teamNameInput");
+const cancelTeamBtn = $("cancelTeamBtn");
+const confirmTeamBtn = $("confirmTeamBtn");
+
+const splashOverlay = $("splashOverlay");
+const splashTitle   = $("splashTitle");
+const splashMessage = $("splashMessage");
+const secretLobster = $("secretLobster");
+
+const statusEl = $("status");
 
 let stream = null;
 let sourceBlob = null;
 let outputDataUrl = null;
-let selectedPreset = "mei_banner";
+let selectedPreset = "lobster_dock";
 let presets = [];
+let facingMode = "user";
 const modelId = "grok-imagine-edit";
 
 const splashLines = [
-  { title: "Cooking up the magic…", message: "Our lobster artists are polishing your scene." },
-  { title: "Tuning the tide…", message: "Adding wave motion and MEI event energy." },
-  { title: "Almost there…", message: "Balancing colors, banners and fun details." },
+  { title: "Cooking up the magic…",  message: "Our lobster artists are polishing your scene." },
+  { title: "Tuning the tide…",       message: "Adding wave motion and maritime energy." },
+  { title: "Almost there…",          message: "Balancing colors, banners and fun details." },
+  { title: "Setting sail…",          message: "Your masterpiece is on its way." },
 ];
 
-function setStatus(m) {
-  statusEl.textContent = m || `Ready · Model: ${modelId}`;
+function setStatus(msg) {
+  if (statusEl) statusEl.textContent = msg || "";
 }
 
-function show(v) {
-  [welcomeView, cameraView, previewView].forEach((el) => el.classList.remove("active"));
-  v.classList.add("active");
+function show(view) {
+  [welcomeView, cameraView, previewView].forEach((v) => v.classList.remove("active"));
+  view.classList.add("active");
 }
 
 function goHome() {
   stopCamera();
   show(welcomeView);
-  setStatus(`Ready · Model: ${modelId}`);
+  setStatus("");
 }
 
-function setLandingBackground(dataUrl) {
-  const backdrop = document.querySelector(".welcome-backdrop");
-  if (backdrop && dataUrl) backdrop.style.backgroundImage = `url('${dataUrl}')`;
-}
-
-async function loadLandingArt() {
-  try {
-    const resp = await fetch("/api/landing-art");
-    if (!resp.ok) return;
-    const data = await resp.json();
-    if (data?.imageBase64) setLandingBackground(data.imageBase64);
-  } catch {
-    // non-blocking visual enhancement
-  }
-}
-
-function renderPrompts() {
-  promptList.innerHTML = "";
-  presets.forEach((p) => {
-    const item = document.createElement("div");
-    item.className = "prompt-item";
-    item.innerHTML = `<strong>${p.label}</strong><span>${p.prompt}</span>`;
-    promptList.appendChild(item);
-  });
-}
+/* ── Presets ── */
 
 function renderPresets() {
   presetGrid.innerHTML = "";
   presets.forEach((p) => {
-    const b = document.createElement("button");
-    b.className = `preset-pill ${p.key === selectedPreset ? "active" : ""}`;
-    b.textContent = p.label;
-    b.onclick = async () => {
-      selectedPreset = p.key;
-      renderPresets();
-      teamNameWrap.classList.toggle("hidden", selectedPreset !== "custom_team_banner");
-      if (sourceBlob) await applyStyle();
-    };
-    presetGrid.appendChild(b);
+    const card = document.createElement("button");
+    card.className = `preset-card${p.key === selectedPreset ? " active" : ""}`;
+    card.innerHTML = `<span class="preset-icon">${p.icon || ""}</span><span class="preset-label">${p.label}</span>`;
+    card.onclick = () => handlePresetClick(p);
+    presetGrid.appendChild(card);
   });
 }
 
-function pickRandomPreset() {
-  if (!presets.length) return;
-  const pool = presets.filter((p) => p.key !== selectedPreset);
-  const next = pool[Math.floor(Math.random() * pool.length)] || presets[0];
-  selectedPreset = next.key;
+async function handlePresetClick(preset) {
+  selectedPreset = preset.key;
   renderPresets();
-  teamNameWrap.classList.toggle("hidden", selectedPreset !== "custom_team_banner");
-  if (sourceBlob) applyStyle();
+
+  if (preset.key === "team_banner") {
+    showTeamModal();
+    return;
+  }
+
+  if (sourceBlob) await applyStyle();
+}
+
+function showTeamModal() {
+  teamModal.classList.remove("hidden");
+  teamNameInput.value = "";
+  setTimeout(() => teamNameInput.focus(), 100);
+}
+
+function hideTeamModal() {
+  teamModal.classList.add("hidden");
 }
 
 async function loadConfig() {
@@ -121,18 +113,19 @@ async function loadConfig() {
       presets = data.presets;
       if (!presets.some((p) => p.key === selectedPreset)) selectedPreset = presets[0].key;
       renderPresets();
-      renderPrompts();
-      setStatus(`Ready · Model: ${modelId}`);
+      setStatus("Ready · Choose a style above");
     }
   } catch {
     setStatus("Could not load presets");
   }
 }
 
+/* ── Camera ── */
+
 async function enableCamera() {
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "user", width: { ideal: 1920 }, height: { ideal: 1080 } },
+      video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
       audio: false,
     });
     video.srcObject = stream;
@@ -142,7 +135,7 @@ async function enableCamera() {
     show(cameraView);
     setStatus("Camera ready");
   } catch {
-    setStatus("Camera unavailable. Please upload.");
+    setStatus("Camera unavailable — please upload a photo.");
   }
 }
 
@@ -151,17 +144,25 @@ function stopCamera() {
   stream = null;
 }
 
+async function flipCamera() {
+  facingMode = facingMode === "user" ? "environment" : "user";
+  stopCamera();
+  await enableCamera();
+}
+
+/* ── Capture & Upload ── */
+
 function dataUrlToBlob(dataUrl) {
   const [header, data] = dataUrl.split(",");
   const mime = header.match(/:(.*?);/)[1];
   const binary = atob(data);
-  const array = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i);
-  return new Blob([array], { type: mime });
+  const arr = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+  return new Blob([arr], { type: mime });
 }
 
-async function readFileAsDataURL(file) {
-  return await new Promise((resolve, reject) => {
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
     const r = new FileReader();
     r.onload = () => resolve(r.result);
     r.onerror = reject;
@@ -178,8 +179,9 @@ async function capturePhoto() {
   sourceBlob = dataUrlToBlob(dataUrl);
   outputDataUrl = dataUrl;
   resultImg.src = dataUrl;
+  stopCamera();
   show(previewView);
-  setStatus("Captured. Tap a style to apply.");
+  setStatus("Captured — tap a style to transform!");
 }
 
 async function setUploadAsSource(file) {
@@ -188,13 +190,15 @@ async function setUploadAsSource(file) {
   outputDataUrl = dataUrl;
   resultImg.src = dataUrl;
   show(previewView);
-  setStatus("Uploaded. Tap a style to apply.");
+  setStatus("Uploaded — tap a style to transform!");
 }
 
+/* ── AI Style Application ── */
+
 function showSplash() {
-  const random = splashLines[Math.floor(Math.random() * splashLines.length)];
-  splashTitle.textContent = random.title;
-  splashMessage.textContent = random.message;
+  const line = splashLines[Math.floor(Math.random() * splashLines.length)];
+  splashTitle.textContent = line.title;
+  splashMessage.textContent = line.message;
   splashOverlay.classList.remove("hidden");
 }
 
@@ -205,7 +209,7 @@ function hideSplash() {
 async function applyStyle() {
   if (!sourceBlob) return;
   showSplash();
-  setStatus("Applying style...");
+  setStatus("Applying style…");
 
   const fd = new FormData();
   fd.append("image", sourceBlob, "input.jpg");
@@ -222,11 +226,13 @@ async function applyStyle() {
     resultImg.src = outputDataUrl;
     setStatus(`Done: ${data.presetUsed} via ${data.modelUsed}`);
   } catch (e) {
-    setStatus(e.message || "Error");
+    setStatus(e.message || "Error applying style");
   } finally {
     hideSplash();
   }
 }
+
+/* ── Download ── */
 
 function downloadCurrent() {
   if (!outputDataUrl) return;
@@ -236,30 +242,70 @@ function downloadCurrent() {
   a.click();
 }
 
+/* ── Secret Easter Egg ── */
+
+let secretTaps = 0;
+let secretTimer = null;
+
+function handleSecretLobster() {
+  secretTaps++;
+  clearTimeout(secretTimer);
+  if (secretTaps >= 3) {
+    secretTaps = 0;
+    selectedPreset = "ai_future";
+    renderPresets();
+    if (sourceBlob) applyStyle();
+  } else {
+    secretTimer = setTimeout(() => { secretTaps = 0; }, 800);
+  }
+}
+
+/* ── Event Bindings ── */
+
 startBtn.onclick = () => consentModal.classList.remove("hidden");
+
 agreeConsentBtn.onclick = async () => {
   consentModal.classList.add("hidden");
   await enableCamera();
 };
+
 cancelConsentBtn.onclick = () => consentModal.classList.add("hidden");
+
 homeBtn.onclick = goHome;
 previewHomeBtn.onclick = goHome;
+flipBtn.onclick = flipCamera;
 captureBtn.onclick = capturePhoto;
 downloadBtn.onclick = downloadCurrent;
-randomPresetBtn.onclick = pickRandomPreset;
 
 uploadInput.onchange = async (e) => {
   const f = e.target.files?.[0];
   if (f) await setUploadAsSource(f);
 };
+
 uploadFromWelcome.onchange = async (e) => {
   const f = e.target.files?.[0];
   if (f) await setUploadAsSource(f);
 };
 
-teamNameInput?.addEventListener("change", async () => {
-  if (selectedPreset === "custom_team_banner" && sourceBlob) await applyStyle();
+cancelTeamBtn.onclick = hideTeamModal;
+
+confirmTeamBtn.onclick = async () => {
+  const name = (teamNameInput?.value || "").trim();
+  if (!name) {
+    teamNameInput.focus();
+    return;
+  }
+  hideTeamModal();
+  if (sourceBlob) await applyStyle();
+};
+
+teamNameInput?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") confirmTeamBtn.click();
 });
 
+if (secretLobster) {
+  secretLobster.onclick = handleSecretLobster;
+}
+
+/* ── Init ── */
 loadConfig();
-loadLandingArt();

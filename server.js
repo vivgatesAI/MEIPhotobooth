@@ -14,7 +14,6 @@ const port = Number(process.env.PORT || 3100);
 
 const AVAILABLE_MODELS = ["grok-imagine-edit"];
 const DEFAULT_MODEL = process.env.VENICE_IMAGE_EDIT_MODEL || "grok-imagine-edit";
-const LANDING_ART_MODEL = process.env.VENICE_LANDING_ART_MODEL || "nano-banana-2";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -24,61 +23,69 @@ const upload = multer({
 });
 
 const PRESETS = {
-  mei_banner: {
-    label: "MEI Banner",
+  lobster_dock: {
+    label: "Lobster Dock",
+    icon: "🦞",
     promptTemplate:
-      "Add a polished, fun MEI event banner reading 'MEI 2026 F2F Meeting' across the top. Keep the people exactly the same. Add colorful nautical accents in the background.",
+      "Professional seaside portrait photo of the subject standing on a rustic New England lobster dock at golden hour, colorful lobster traps stacked nearby, calm harbor water reflecting warm sunlight, classic lobster boats in the background, soft ocean breeze, cinematic lighting, ultra detailed, vibrant maritime colors, joyful atmosphere, natural smile, high-end photography",
   },
-  boston_watercolor: {
-    label: "Watercolor Boston Skyline",
+  watercolor_harbor: {
+    label: "Watercolor Harbor",
+    icon: "🎨",
     promptTemplate:
-      "Place the same people into a watercolor background of the Boston skyline with recognizable Boston landmarks, soft paper texture, and elegant conference vibes.",
+      "Elegant watercolor painting portrait of the subject in a charming coastal harbor scene with lobster boats and colorful buoys floating in the water, soft ocean mist in the distance, gentle pastel watercolor brush strokes, artistic paper texture, warm sunlight, dreamy seaside atmosphere, the subject smiling warmly, whimsical and beautiful",
   },
-  funny_caricature: {
-    label: "Funny Caricature",
+  hand_caricature: {
+    label: "Caricature",
+    icon: "✏️",
     promptTemplate:
-      "Create a funny caricature look with playful exaggeration in expression only, while preserving identity and making sure each person is still clearly recognizable.",
+      "Hand-painted caricature illustration of the subject with playful proportions and expressive features, standing in a vibrant New England lobster harbor full of fishing boats, lobster traps, ropes, and colorful buoys, bright cheerful colors, textured brush painting style, fun exaggerated expression, joyful personality, subject smiling brightly",
   },
-  lobsters_flying: {
-    label: "Lobsters Flying",
+  lobster_captain: {
+    label: "Lobster Captain",
+    icon: "⚓",
     promptTemplate:
-      "Add whimsical flying lobsters around the scene with confetti and nautical energy, while keeping all people unchanged and realistic.",
+      "Epic portrait of the subject as a legendary lobster boat captain standing proudly on the deck of a fishing vessel, dramatic ocean horizon behind them, stacks of lobster traps, seagulls flying overhead, golden sunset reflecting off the sea, cinematic lighting, heroic maritime atmosphere, ultra detailed, powerful composition",
   },
-  ride_the_wave: {
-    label: "Ride the Wave",
+  team_banner: {
+    label: "Team Banner",
+    icon: "🚩",
     promptTemplate:
-      "Place people in the image riding a dramatic stylized wave with ocean spray and event lighting, keeping faces and body identity intact.",
+      "Group portrait with the subject standing together like a proud crew on a scenic harbor dock, a large elegant maritime banner behind them displaying the team name '{{TEAM_NAME}}' in beautiful classic nautical lettering, with 'MEI 2026' written below it in smaller elegant font, festive harbor atmosphere, lobster traps and boats nearby, warm celebratory lighting",
   },
-  neon_clothes: {
-    label: "Neon Outfit Glow",
+  coastal_celebration: {
+    label: "Coastal Celebration",
+    icon: "🎉",
     promptTemplate:
-      "Add seamless neon light accents on clothes and accessories, integrated naturally with scene lighting, preserving exact person identity.",
+      "Vibrant seaside celebration portrait with the subject standing near a festive lobster shack by the harbor, colorful string lights, lobster traps and buoys decorating the dock, glowing sunset sky over the ocean, joyful coastal summer vibes, cinematic lighting, ultra detailed, beautiful atmosphere",
   },
-  custom_team_banner: {
-    label: "Custom Team Banner",
+  ai_future: {
+    label: "AI Future",
+    icon: "🤖",
     promptTemplate:
-      "Add a top banner with team name '{{TEAM_NAME}}' and include a smaller sign saying 'MEI 2026'. Make it look naturally composited, fun, and conference-ready.",
+      "Futuristic cyberpunk coastal city filled with advanced AI technology, glowing neon buildings, holographic ocean waves, robotic lobster drones flying overhead, neon lights reflecting off wet streets, vibrant sci-fi atmosphere, dramatic lighting, highly detailed futuristic world. A glowing neon sign reads: 'Made with ❤️ by Medical AI'.",
   },
 };
 
 function buildInstruction({ presetKey, teamName = "" }) {
-  const preset = PRESETS[presetKey] || PRESETS.mei_banner;
+  const preset = PRESETS[presetKey];
+  if (!preset) {
+    return "Transform this image with a fun nautical theme while keeping the person completely unchanged.";
+  }
 
   const identityGuardrail = [
-    "CRITICAL: Do not alter the people themselves.",
-    "Keep the exact same faces, body proportions, skin tones, age, and identity-defining features.",
-    "No face swaps, no person replacement, no age changes, and no beauty filter effects.",
-    "Only modify environment, props, overlays, and artistic style around the original photo.",
-    "The source photo composition and person identity must remain unchanged.",
+    "CRITICAL INSTRUCTION: The person in the photo must remain COMPLETELY UNCHANGED.",
+    "Preserve exact face, expression, body proportions, skin tone, age, and all identity features.",
+    "NO face swaps, NO person replacement, NO age changes, NO beauty filters.",
+    "Only modify the environment, background, lighting, and artistic style around the person.",
+    "The person's pose, clothing, and appearance must be pixel-perfect preserved.",
   ].join(" ");
 
-  const finalTeamName = String(teamName || "").trim() || "YOUR TEAM NAME";
+  const finalTeamName = String(teamName || "").trim() || "YOUR TEAM";
   const presetPrompt = preset.promptTemplate.replaceAll("{{TEAM_NAME}}", finalTeamName);
 
-  return `${identityGuardrail} Preset direction: ${presetPrompt}`;
+  return `${identityGuardrail} CREATIVE DIRECTION: ${presetPrompt}`;
 }
-
-let cachedLandingArt = null;
 
 app.use(express.json({ limit: "2mb" }));
 app.use(express.static(path.join(__dirname, "public")));
@@ -88,83 +95,20 @@ app.get("/health", (_req, res) => {
 });
 
 app.get("/api/config", (_req, res) => {
-  res.json({
-    presets: Object.entries(PRESETS).map(([key, value]) => ({
+  const publicPresets = Object.entries(PRESETS)
+    .filter(([key]) => key !== "ai_future")
+    .map(([key, value]) => ({
       key,
       label: value.label,
+      icon: value.icon,
       prompt: value.promptTemplate,
-    })),
+    }));
+
+  res.json({
+    presets: publicPresets,
     models: AVAILABLE_MODELS,
     defaultModel: DEFAULT_MODEL,
   });
-});
-
-app.get("/api/landing-art", async (_req, res) => {
-  try {
-    if (cachedLandingArt) {
-      return res.json({ imageBase64: cachedLandingArt, cached: true });
-    }
-
-    const apiKey = process.env.VENICE_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ error: "VENICE_API_KEY missing on server" });
-    }
-
-    const payload = {
-      modelId: LANDING_ART_MODEL,
-      width: 1344,
-      height: 768,
-      prompt:
-        "Fun colorful lobster mascot design for an event landing page. Include a banner that reads 'MEI 2026 F2F Meeting'. Nautical Boston harbor vibe, playful but premium, vibrant blues/cyans/corals/yellows, clean readable composition with room for UI overlays.",
-      format: "png",
-    };
-
-    const veniceResp = await fetch("https://api.venice.ai/api/v1/image/generate", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!veniceResp.ok) {
-      const text = await veniceResp.text();
-      return res.status(veniceResp.status).json({
-        error: "Venice landing-art generate failed",
-        details: text.slice(0, 500),
-      });
-    }
-
-    const contentType = veniceResp.headers.get("content-type") || "";
-
-    if (contentType.includes("application/json")) {
-      const data = await veniceResp.json();
-      const b64 =
-        data?.imageBase64 ||
-        data?.images?.[0]?.base64 ||
-        data?.data?.[0]?.b64_json ||
-        data?.result?.[0]?.base64;
-
-      if (!b64) {
-        return res.status(500).json({ error: "Landing art response did not include base64 image" });
-      }
-
-      cachedLandingArt = `data:image/png;base64,${b64}`;
-      return res.json({ imageBase64: cachedLandingArt, cached: false });
-    }
-
-    const arrBuf = await veniceResp.arrayBuffer();
-    const base64 = Buffer.from(arrBuf).toString("base64");
-    cachedLandingArt = `data:image/png;base64,${base64}`;
-
-    return res.json({ imageBase64: cachedLandingArt, cached: false });
-  } catch (err) {
-    return res.status(500).json({
-      error: "Landing art generation error",
-      details: err instanceof Error ? err.message : "unknown",
-    });
-  }
 });
 
 app.post("/api/edit", upload.single("image"), async (req, res) => {
@@ -178,13 +122,15 @@ app.post("/api/edit", upload.single("image"), async (req, res) => {
       return res.status(400).json({ error: "Image is required" });
     }
 
-    const presetKey = String(req.body.preset || "mei_banner");
+    const presetKey = String(req.body.preset || "lobster_dock");
     const teamName = String(req.body.teamName || "");
     const aspectRatio = String(req.body.aspectRatio || "auto");
     const requestedModel = String(req.body.modelId || DEFAULT_MODEL);
     const modelId = AVAILABLE_MODELS.includes(requestedModel)
       ? requestedModel
-      : (AVAILABLE_MODELS.includes(DEFAULT_MODEL) ? DEFAULT_MODEL : "grok-imagine-edit");
+      : AVAILABLE_MODELS.includes(DEFAULT_MODEL)
+        ? DEFAULT_MODEL
+        : "grok-imagine-edit";
 
     const prompt = buildInstruction({ presetKey, teamName });
 
@@ -234,5 +180,5 @@ app.get("/", (_req, res) => {
 });
 
 app.listen(port, "0.0.0.0", () => {
-  console.log(`MEI Photo Booth listening on :${port}`);
+  console.log(`🦞 MEI Photo Booth listening on :${port}`);
 });

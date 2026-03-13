@@ -3,97 +3,168 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>MEI Photo Booth</title>
+  <title>MEI AI Photo Booth 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Playfair+Display:wght@400;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
   <main class="app-root" id="appRoot">
+
+    <!-- ═══════════ WELCOME VIEW ═══════════ -->
     <section id="welcomeView" class="view active welcome-view">
-      <div class="welcome-backdrop"></div>
-      <div class="welcome-card">
-        <div class="logo-wrap">
-          <img src="/assets/logo.png" alt="MEI" class="welcome-logo" />
-          <span class="pill">MEI 2026</span>
+      <div class="ocean-bg">
+        <svg class="wave wave-back" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <path d="M0,160 C320,230 640,90 960,160 C1280,230 1440,130 1440,130 L1440,320 L0,320Z"/>
+        </svg>
+        <svg class="wave wave-mid" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <path d="M0,200 C240,270 480,130 720,200 C960,270 1200,150 1440,200 L1440,320 L0,320Z"/>
+        </svg>
+        <svg class="wave wave-front" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <path d="M0,250 C360,290 720,210 1080,260 C1260,275 1440,250 1440,250 L1440,320 L0,320Z"/>
+        </svg>
+      </div>
+
+      <div class="welcome-content">
+        <div class="rope-divider"></div>
+
+        <div class="hero-lobster-wrap">
+          <div class="hero-ring"></div>
+          <div class="hero-ring hero-ring-2"></div>
+          <div class="hero-lobster" aria-hidden="true">🦞</div>
         </div>
-        <h1>MEI Photo Booth</h1>
-        <p class="script">Boston Medical Engagement & Impact</p>
-        <p class="welcome-copy">Snap or upload and create epic MEI moments with fun nautical vibes.</p>
-        <div class="welcome-actions">
-          <button id="startBtn" class="btn primary">Take a Photo 🎉</button>
-          <label class="btn secondary upload-inline">Upload Photo 📂
-            <input id="uploadFromWelcome" type="file" accept="image/*" />
+
+        <h1 class="main-title">MEI AI Photo Booth</h1>
+        <div class="year-badge">2026</div>
+        <p class="tagline">Capture your crew in legendary style</p>
+
+        <div class="buoy-row" aria-hidden="true">
+          <span class="buoy buoy-red"></span>
+          <span class="buoy buoy-white"></span>
+          <span class="buoy buoy-red"></span>
+        </div>
+
+        <div class="action-buttons">
+          <button id="startBtn" class="btn btn-primary btn-lg">
+            <span class="btn-icon">📸</span> Take Photo
+          </button>
+          <label class="btn btn-secondary btn-lg">
+            <span class="btn-icon">📁</span> Upload Photo
+            <input id="uploadFromWelcome" type="file" accept="image/*" hidden />
           </label>
         </div>
+
+        <div class="rope-divider"></div>
       </div>
     </section>
 
+    <!-- ═══════════ CAMERA VIEW ═══════════ -->
     <section id="cameraView" class="view camera-view">
-      <div class="camera-shell">
-        <video id="video" autoplay playsinline muted></video>
-        <canvas id="captureCanvas" style="display:none"></canvas>
-        <img id="previewImg" alt="preview" style="display:none" />
+      <div class="cam-header">
+        <button id="homeBtn" class="btn-round" title="Back to Home">⚓</button>
+        <h2 class="cam-title">Ship's Camera</h2>
+        <button id="flipBtn" class="btn-round" title="Flip Camera">🔄</button>
       </div>
-      <div class="camera-controls">
-        <button id="homeBtn" class="btn secondary">Home</button>
-        <button id="captureBtn" class="capture-btn" disabled aria-label="Take Photo"></button>
-        <label class="btn secondary upload-inline">Upload
-          <input id="uploadInput" type="file" accept="image/*" />
+
+      <div class="cam-viewport">
+        <div class="porthole">
+          <div class="porthole-bolts" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <div class="porthole-glass">
+            <video id="video" autoplay playsinline muted></video>
+            <canvas id="captureCanvas" style="display:none"></canvas>
+            <img id="previewImg" alt="preview" style="display:none" />
+          </div>
+        </div>
+      </div>
+
+      <div class="cam-controls">
+        <label class="btn btn-ghost-light">
+          📁 Upload
+          <input id="uploadInput" type="file" accept="image/*" hidden />
         </label>
+        <button id="captureBtn" class="shutter-btn" disabled aria-label="Take Photo">
+          <span class="shutter-ring"><span class="shutter-dot"></span></span>
+        </button>
+        <div class="cam-spacer"></div>
       </div>
     </section>
 
+    <!-- ═══════════ PREVIEW VIEW ═══════════ -->
     <section id="previewView" class="view preview-view">
-      <div class="edit-page-wrap">
-        <div class="preview-stage-card">
-          <button id="previewHomeBtn" class="chip-home">🏠 Home</button>
-          <div class="preview-shell portrait-shell">
-            <img id="resultImg" alt="result" />
+      <div class="pv-layout">
+        <div class="pv-header">
+          <button id="previewHomeBtn" class="btn-round" title="Back to Home">⚓</button>
+          <h2 class="pv-title">Choose Your Adventure</h2>
+          <div class="pv-spacer"></div>
+        </div>
+
+        <div class="pv-photo">
+          <div class="photo-frame">
+            <img id="resultImg" alt="Your photo" />
             <div id="splashOverlay" class="splash-overlay hidden">
-              <div class="splash-bubble">
-                <div class="wave-loader">
-                  <span></span><span></span><span></span>
-                </div>
+              <div class="splash-inner">
+                <div class="lobster-spinner">🦞</div>
                 <h3 id="splashTitle">Cooking up the magic…</h3>
-                <p id="splashMessage">Our lobster artists are adding waves, neon and MEI sparkle.</p>
+                <p id="splashMessage">Our lobster artists are painting your scene</p>
+                <div class="wave-loader"><span></span><span></span><span></span></div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="ai-style-bar">
-          <button id="randomPresetBtn" class="mini-round">⟳</button>
-          <div class="ai-style-label">✦ Add an AI Style</div>
-          <div class="mini-emoji">🦞</div>
+        <div class="pv-presets">
+          <div class="presets-grid" id="presetGrid"></div>
         </div>
 
-        <div class="style-toolbar sleek-toolbar">
-          <div id="presetGrid" class="preset-pills grid-two"></div>
-          <label id="teamNameWrap" class="team-name-wrap hidden">
-            Team Name
-            <input id="teamNameInput" type="text" placeholder="Enter your team name" maxlength="48" />
-          </label>
+        <div class="pv-actions">
+          <button id="downloadBtn" class="btn btn-download">⬇ Save &amp; Share</button>
         </div>
 
-        <button id="downloadBtn" class="save-share-btn">⬇ Save and share with MEI Team</button>
-        <p id="status" class="status">Ready · Model: grok-imagine-edit</p>
+        <div id="status" class="status-text">Ready &middot; Choose a style above</div>
 
-        <details class="prompt-panel">
-          <summary>Show all preset prompts</summary>
-          <div id="promptList" class="prompt-list"></div>
-        </details>
+        <span id="secretLobster" class="secret-lobster" title="">🦞</span>
       </div>
     </section>
 
-    <section id="consentModal" class="modal hidden">
+    <!-- ═══════════ TEAM NAME MODAL ═══════════ -->
+    <section id="teamModal" class="modal hidden">
+      <div class="modal-backdrop"></div>
       <div class="modal-card">
-        <h3>Quick Note!</h3>
-        <p>This photo booth needs camera access to take pictures. You can also upload from your phone library.</p>
-        <div class="modal-actions">
-          <button id="cancelConsentBtn" class="btn secondary">Cancel</button>
-          <button id="agreeConsentBtn" class="btn primary">I Agree</button>
+        <div class="modal-rope"></div>
+        <div class="modal-emoji">🚩</div>
+        <h3 class="modal-heading">Name Your Crew</h3>
+        <p class="modal-sub">Enter your team name</p>
+        <div class="modal-input-wrap">
+          <input id="teamNameInput" type="text" placeholder="Team name…" maxlength="30" autocomplete="off" />
         </div>
+        <div class="modal-btns">
+          <button id="cancelTeamBtn" class="btn btn-ghost">Cancel</button>
+          <button id="confirmTeamBtn" class="btn btn-primary">Raise the Banner!</button>
+        </div>
+        <div class="modal-rope"></div>
       </div>
     </section>
+
+    <!-- ═══════════ CONSENT MODAL ═══════════ -->
+    <section id="consentModal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-card">
+        <div class="modal-rope"></div>
+        <div class="modal-emoji">📷</div>
+        <h3 class="modal-heading">Permission to Board</h3>
+        <p class="modal-sub">This photo booth needs camera access to take pictures. You can also upload from your gallery.</p>
+        <div class="modal-btns">
+          <button id="cancelConsentBtn" class="btn btn-ghost">Not Now</button>
+          <button id="agreeConsentBtn" class="btn btn-primary">Aye Aye! ⚓</button>
+        </div>
+        <div class="modal-rope"></div>
+      </div>
+    </section>
+
   </main>
   <script src="/assets/app.js"></script>
 </body>
