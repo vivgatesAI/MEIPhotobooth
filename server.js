@@ -62,7 +62,7 @@ const PRESETS = {
   ai_future: {
     label: "AI Future",
     icon: "🤖",
-    prompt: "The person in a futuristic cyberpunk city. Neon buildings, holographic ocean waves, robotic lobster drones flying overhead, neon reflections on wet streets. Glowing neon sign reads 'Made with ❤️ by Medical AI'",
+    prompt: "The person in a futuristic cyberpunk coastal city. Neon buildings, robotic lobster drones flying overhead, neon reflections on wet streets. Glowing neon sign reads 'Made with ❤️ by Medical AI'.",
   },
 };
 
