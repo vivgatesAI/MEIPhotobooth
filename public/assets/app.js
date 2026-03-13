@@ -10,6 +10,7 @@ const previewView   = $("previewView");
 const consentModal  = $("consentModal");
 const teamModal     = $("teamModal");
 const settingsModal = $("settingsModal");
+const promptModal   = $("promptModal");
 
 const startBtn         = $("startBtn");
 const agreeConsentBtn  = $("agreeConsentBtn");
@@ -19,6 +20,11 @@ const previewHomeBtn   = $("previewHomeBtn");
 const flipBtn          = $("flipBtn");
 const settingsBtn      = $("settingsBtn");
 const closeSettingsBtn = $("closeSettingsBtn");
+const retakeBtn        = $("retakeBtn");
+const customPromptBtn  = $("customPromptBtn");
+const cancelPromptBtn  = $("cancelPromptBtn");
+const submitPromptBtn  = $("submitPromptBtn");
+const customPromptInput = $("customPromptInput");
 
 const video         = $("video");
 const captureCanvas = $("captureCanvas");
@@ -48,7 +54,7 @@ let stream = null;
 let sourceBlob = null;
 let outputDataUrl = null;
 let selectedPreset = "lobster_dock";
-let selectedModel = "grok-imagine-edit";
+let selectedModel = "qwen-image-2-edit";
 let presets = [];
 let models = [];
 let facingMode = "user";
@@ -133,6 +139,32 @@ function showSettings() {
 
 function hideSettings() {
   settingsModal.classList.add("hidden");
+}
+
+/* ── Custom Prompt ── */
+
+function showPromptModal() {
+  customPromptInput.value = "";
+  promptModal.classList.remove("hidden");
+  setTimeout(() => customPromptInput.focus(), 100);
+}
+
+function hidePromptModal() {
+  promptModal.classList.add("hidden");
+}
+
+async function submitCustomPrompt() {
+  const text = (customPromptInput.value || "").trim();
+  if (!text) {
+    customPromptInput.focus();
+    return;
+  }
+  hidePromptModal();
+  if (!sourceBlob) return;
+
+  selectedPreset = "custom";
+  renderPresets();
+  await applyStyleWithCustomPrompt(text);
 }
 
 /* ── Config ── */
@@ -273,6 +305,32 @@ async function applyStyle() {
   }
 }
 
+async function applyStyleWithCustomPrompt(promptText) {
+  if (!sourceBlob) return;
+  showSplash();
+  setStatus("Creating your photo…");
+
+  const fd = new FormData();
+  fd.append("image", sourceBlob, "input.jpg");
+  fd.append("preset", "custom");
+  fd.append("customPrompt", promptText);
+  fd.append("modelId", selectedModel);
+  fd.append("aspectRatio", window.innerHeight > window.innerWidth ? "4:5" : "16:9");
+
+  try {
+    const resp = await fetch("/api/edit", { method: "POST", body: fd });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data?.error || "Edit failed");
+    outputDataUrl = data.imageBase64;
+    resultImg.src = outputDataUrl;
+    setStatus("Your photo is ready! Download or try another style.");
+  } catch (e) {
+    setStatus(e.message || "Something went wrong — try again.");
+  } finally {
+    hideSplash();
+  }
+}
+
 /* ── Download ── */
 
 function downloadCurrent() {
@@ -298,6 +356,12 @@ function handleSecretLobster() {
   if (sourceBlob) applyStyle();
 }
 
+/* ── Retake ── */
+
+async function handleRetake() {
+  consentModal.classList.remove("hidden");
+}
+
 /* ── Event Bindings ── */
 
 startBtn.onclick = () => consentModal.classList.remove("hidden");
@@ -314,9 +378,14 @@ previewHomeBtn.onclick = goHome;
 flipBtn.onclick = flipCamera;
 captureBtn.onclick = capturePhoto;
 downloadBtn.onclick = downloadCurrent;
+retakeBtn.onclick = handleRetake;
 
 settingsBtn.onclick = showSettings;
 closeSettingsBtn.onclick = hideSettings;
+
+customPromptBtn.onclick = showPromptModal;
+cancelPromptBtn.onclick = hidePromptModal;
+submitPromptBtn.onclick = submitCustomPrompt;
 
 uploadInput.onchange = async (e) => {
   const f = e.target.files?.[0];
@@ -342,6 +411,13 @@ confirmTeamBtn.onclick = async () => {
 
 teamNameInput?.addEventListener("keydown", (e) => {
   if (e.key === "Enter") confirmTeamBtn.click();
+});
+
+customPromptInput?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    submitPromptBtn.click();
+  }
 });
 
 if (secretLobster) {

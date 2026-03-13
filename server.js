@@ -12,19 +12,13 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = Number(process.env.PORT || 3100);
 
-const DEFAULT_MODEL = process.env.VENICE_IMAGE_EDIT_MODEL || "grok-imagine-edit";
+const DEFAULT_MODEL = process.env.VENICE_IMAGE_EDIT_MODEL || "qwen-image-2-edit";
 
 const MODELS = {
-  "grok-imagine-edit":      { name: "Grok Imagine",      price: 0.04, ratios: ["auto","1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
-  "qwen-edit":              { name: "Qwen Edit",          price: 0.04, ratios: ["auto","1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
-  "qwen-image-2-edit":      { name: "Qwen Image 2",       price: 0.05, ratios: ["1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
-  "seedream-v4-edit":       { name: "SeedreamV4.5",       price: 0.05, ratios: ["auto","1:1","3:2","16:9","9:16","2:3","3:4","4:5"] },
-  "seedream-v5-lite-edit":  { name: "SeedreamV5 Lite",    price: 0.05, ratios: ["auto","1:1","3:2","16:9","9:16","2:3","3:4","4:5"] },
-  "flux-2-max-edit":        { name: "Flux 2 Max",         price: 0.09, ratios: ["auto","1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
-  "qwen-image-2-pro-edit":  { name: "Qwen Image 2 Pro",   price: 0.10, ratios: ["1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
-  "nano-banana-2-edit":     { name: "Nano Banana 2",      price: 0.10, ratios: ["auto","1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
-  "nano-banana-pro-edit":   { name: "Nano Banana Pro",    price: 0.18, ratios: ["auto","1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
-  "gpt-image-1-5-edit":     { name: "GPT Image 1.5",      price: 0.36, ratios: ["auto","1:1","3:2","2:3"] },
+  "qwen-image-2-edit":    { name: "Qwen Image 2",    price: 0.05, ratios: ["1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
+  "grok-imagine-edit":    { name: "Grok Imagine",     price: 0.04, ratios: ["auto","1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
+  "nano-banana-2-edit":   { name: "Nano Banana 2",    price: 0.10, ratios: ["auto","1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
+  "nano-banana-pro-edit": { name: "Nano Banana Pro",   price: 0.18, ratios: ["auto","1:1","3:2","16:9","21:9","9:16","2:3","3:4","4:5"] },
 };
 
 const upload = multer({
@@ -80,7 +74,10 @@ function getSafeAspectRatio(requested, modelId) {
   return fallbacks.find((r) => model.ratios.includes(r)) || model.ratios[0];
 }
 
-function buildPrompt({ presetKey, teamName = "" }) {
+function buildPrompt({ presetKey, teamName = "", customPrompt = "" }) {
+  if (presetKey === "custom" && customPrompt) {
+    return customPrompt.slice(0, 1500);
+  }
   const preset = PRESETS[presetKey];
   if (!preset) return "Transform this photo with a fun nautical coastal theme.";
   const finalTeamName = String(teamName || "").trim() || "YOUR TEAM";
@@ -128,12 +125,13 @@ app.post("/api/edit", upload.single("image"), async (req, res) => {
 
     const presetKey = String(req.body.preset || "lobster_dock");
     const teamName = String(req.body.teamName || "");
+    const customPrompt = String(req.body.customPrompt || "");
     const requestedRatio = String(req.body.aspectRatio || "auto");
     const requestedModel = String(req.body.modelId || DEFAULT_MODEL);
     const modelId = MODELS[requestedModel] ? requestedModel : DEFAULT_MODEL;
     const aspectRatio = getSafeAspectRatio(requestedRatio, modelId);
 
-    const prompt = buildPrompt({ presetKey, teamName });
+    const prompt = buildPrompt({ presetKey, teamName, customPrompt });
 
     const payload = {
       image: req.file.buffer.toString("base64"),

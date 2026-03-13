@@ -23,7 +23,7 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;-webkit-tap-highlight-color:transparent}
 body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--navy-deep);color:var(--sand)}
-button,input{font-family:inherit}
+button,input,textarea{font-family:inherit}
 img{display:block;max-width:100%}
 
 /* ── Layout ── */
@@ -94,25 +94,27 @@ img{display:block;max-width:100%}
   50%{transform:translateY(-10px) rotate(2deg)}
 }
 
-/* Title */
+/* Title — Century Gothic style via Raleway */
 .main-title{
-  font-family:'Lobster',cursive;font-size:clamp(36px,7vw,56px);
-  color:var(--sand);letter-spacing:1px;
+  font-family:'Raleway',sans-serif;font-weight:900;
+  font-size:clamp(32px,7vw,52px);
+  color:var(--sand);letter-spacing:2px;text-transform:uppercase;
   text-shadow:0 3px 12px rgba(0,0,0,.5),0 0 40px rgba(199,54,47,.15);
   line-height:1.1;
 }
 .year-badge{
   display:inline-block;
   background:linear-gradient(135deg,var(--lobster),var(--lobster-glow));
-  color:var(--white);font-weight:800;font-size:18px;
+  color:var(--white);
+  font-family:'Raleway',sans-serif;font-weight:800;font-size:18px;
   padding:6px 20px;border-radius:999px;
   box-shadow:0 4px 16px rgba(199,54,47,.4);
-  letter-spacing:2px;margin:4px 0;
+  letter-spacing:3px;margin:4px 0;
 }
 .tagline{
-  font-family:'Playfair Display',serif;font-style:italic;
-  font-size:clamp(16px,3vw,22px);color:var(--seafoam);
-  margin:4px 0 8px;
+  font-family:'Raleway',sans-serif;font-weight:600;font-style:italic;
+  font-size:clamp(15px,3vw,20px);color:var(--seafoam);
+  margin:4px 0 8px;letter-spacing:.5px;
 }
 
 /* Buoy row */
@@ -129,8 +131,12 @@ img{display:block;max-width:100%}
   50%{transform:translateY(-6px) rotate(4deg)}
 }
 
-/* Action buttons */
-.action-buttons{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin:8px 0}
+/* Action buttons — stacked vertically, centered */
+.action-buttons{
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  margin:10px 0;width:100%;max-width:320px;
+}
+.btn-full{width:100%}
 
 /* ═══════════════════════════════════════════
    CAMERA VIEW — Full-screen live preview
@@ -312,13 +318,21 @@ img{display:block;max-width:100%}
   font-size:clamp(11px,2vw,14px);line-height:1.2;text-align:center;
 }
 
-/* Download / actions */
-.pv-actions{flex-shrink:0;display:flex;justify-content:center}
+/* Actions row: retake + download */
+.pv-actions{flex-shrink:0;display:flex;gap:10px;justify-content:center}
+.btn-retake{
+  background:rgba(11,37,69,.08);color:var(--navy);
+  font-size:14px;font-weight:700;padding:12px 18px;border-radius:14px;
+  border:2px solid rgba(11,37,69,.12);
+  transition:all .18s;
+}
+.btn-retake:hover{border-color:var(--ocean);color:var(--ocean)}
+.btn-retake:active{transform:scale(.97)}
 .btn-download{
-  width:100%;max-width:400px;
+  flex:1;max-width:300px;
   background:linear-gradient(135deg,var(--lobster),var(--lobster-glow));
-  color:var(--white);font-size:16px;font-weight:800;
-  padding:14px 20px;border-radius:14px;
+  color:var(--white);font-size:15px;font-weight:800;
+  padding:12px 20px;border-radius:14px;
   box-shadow:0 6px 20px rgba(199,54,47,.3);
   transition:all .18s;
 }
@@ -330,7 +344,19 @@ img{display:block;max-width:100%}
   color:rgba(11,37,69,.5);flex-shrink:0;min-height:18px;
 }
 
-/* Secret lobster easter egg */
+/* Corner buttons (custom prompt + secret lobster) */
+.pv-corner-btn{
+  position:absolute;bottom:8px;
+  appearance:none;border:none;background:transparent;
+  font-size:16px;opacity:.3;cursor:pointer;
+  transition:all .3s ease;user-select:none;z-index:2;
+  width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;
+}
+.pv-corner-btn:hover{opacity:.6;transform:scale(1.15);background:rgba(11,37,69,.06)}
+.pv-corner-btn:active{transform:scale(.95)}
+.pv-corner-left{left:12px}
+
 .secret-lobster{
   position:absolute;bottom:8px;right:12px;
   font-size:16px;opacity:.25;cursor:pointer;
@@ -376,6 +402,15 @@ img{display:block;max-width:100%}
   transition:border-color .2s;
 }
 .modal-input-wrap input:focus{outline:none;border-color:var(--ocean)}
+.modal-textarea-wrap{margin-bottom:18px}
+.modal-textarea-wrap textarea{
+  width:100%;padding:14px 16px;border-radius:12px;
+  border:2px solid rgba(11,37,69,.15);
+  background:var(--white);color:var(--navy);
+  font-size:16px;font-weight:500;line-height:1.4;
+  resize:none;transition:border-color .2s;
+}
+.modal-textarea-wrap textarea:focus{outline:none;border-color:var(--ocean)}
 .modal-btns{display:flex;gap:10px;justify-content:center}
 
 /* Model picker list */
@@ -439,13 +474,6 @@ img{display:block;max-width:100%}
   border:2px solid rgba(11,37,69,.2);
 }
 .btn-ghost:hover{border-color:var(--ocean);color:var(--ocean)}
-.btn-ghost-light{
-  appearance:none;border:none;background:rgba(255,255,255,.1);
-  color:var(--sand);padding:10px 18px;border-radius:999px;
-  font-weight:700;font-size:14px;cursor:pointer;
-  transition:background .18s;
-}
-.btn-ghost-light:hover{background:rgba(255,255,255,.2)}
 .btn-round{
   appearance:none;border:none;width:44px;height:44px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
@@ -466,7 +494,8 @@ img{display:block;max-width:100%}
   .preset-card{padding:10px 6px;border-radius:10px}
   .preset-card .preset-icon{font-size:24px}
   .preset-card .preset-label{font-size:11px}
-  .btn-download{font-size:14px;padding:12px 16px;border-radius:12px}
+  .btn-download{font-size:13px;padding:12px 14px;border-radius:12px}
+  .btn-retake{font-size:12px;padding:10px 14px}
   .status-text{font-size:11px}
   .hero-lobster{font-size:64px}
   .hero-lobster-wrap{width:120px;height:120px}

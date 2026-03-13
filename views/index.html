@@ -6,7 +6,7 @@
   <title>MEI AI Photo Booth 2026</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Playfair+Display:wght@400;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700;800;900&family=Lobster&family=Playfair+Display:wght@400;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
@@ -46,10 +46,10 @@
         </div>
 
         <div class="action-buttons">
-          <button id="startBtn" class="btn btn-primary btn-lg">
+          <button id="startBtn" class="btn btn-primary btn-lg btn-full">
             <span class="btn-icon">📸</span> Take Photo
           </button>
-          <label class="btn btn-secondary btn-lg">
+          <label class="btn btn-secondary btn-lg btn-full">
             <span class="btn-icon">📁</span> Upload Photo
             <input id="uploadFromWelcome" type="file" accept="image/*" hidden />
           </label>
@@ -67,7 +67,7 @@
 
       <div class="cam-overlay">
         <div class="cam-top-bar">
-          <button id="homeBtn" class="btn-round cam-btn" title="Back to Home">⚓</button>
+          <button id="homeBtn" class="btn-round cam-btn" title="Back to Home">🏠</button>
           <button id="flipBtn" class="btn-round cam-btn" title="Flip Camera">🔄</button>
         </div>
 
@@ -88,7 +88,7 @@
     <section id="previewView" class="view preview-view">
       <div class="pv-layout">
         <div class="pv-header">
-          <button id="previewHomeBtn" class="btn-round" title="Back to Home">⚓</button>
+          <button id="previewHomeBtn" class="btn-round" title="Back to Home">🏠</button>
           <h2 class="pv-title">Choose Your Adventure</h2>
           <button id="settingsBtn" class="btn-round" title="Settings">⚙️</button>
         </div>
@@ -112,11 +112,13 @@
         </div>
 
         <div class="pv-actions">
+          <button id="retakeBtn" class="btn btn-retake">📷 Retake</button>
           <button id="downloadBtn" class="btn btn-download">⬇ Save &amp; Share</button>
         </div>
 
         <div id="status" class="status-text">Ready &middot; Choose a style above</div>
 
+        <button id="customPromptBtn" class="pv-corner-btn pv-corner-left" title="Custom prompt">✏️</button>
         <span id="secretLobster" class="secret-lobster" title="">🦞</span>
       </div>
     </section>
@@ -135,6 +137,25 @@
         <div class="modal-btns">
           <button id="cancelTeamBtn" class="btn btn-ghost">Cancel</button>
           <button id="confirmTeamBtn" class="btn btn-primary">Raise the Banner!</button>
+        </div>
+        <div class="modal-rope"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════ CUSTOM PROMPT MODAL ═══════════ -->
+    <section id="promptModal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-card">
+        <div class="modal-rope"></div>
+        <div class="modal-emoji">✏️</div>
+        <h3 class="modal-heading">Your Prompt</h3>
+        <p class="modal-sub">Describe how you want your photo to look</p>
+        <div class="modal-textarea-wrap">
+          <textarea id="customPromptInput" placeholder="e.g. On a tropical beach at sunset with palm trees…" maxlength="500" rows="3"></textarea>
+        </div>
+        <div class="modal-btns">
+          <button id="cancelPromptBtn" class="btn btn-ghost">Cancel</button>
+          <button id="submitPromptBtn" class="btn btn-primary">Generate!</button>
         </div>
         <div class="modal-rope"></div>
       </div>
@@ -166,7 +187,7 @@
         <p class="modal-sub">This photo booth needs camera access to take pictures. You can also upload from your gallery.</p>
         <div class="modal-btns">
           <button id="cancelConsentBtn" class="btn btn-ghost">Not Now</button>
-          <button id="agreeConsentBtn" class="btn btn-primary">Aye Aye! ⚓</button>
+          <button id="agreeConsentBtn" class="btn btn-primary">Let's Go!</button>
         </div>
         <div class="modal-rope"></div>
       </div>
