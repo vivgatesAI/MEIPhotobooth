@@ -252,6 +252,13 @@ function handleSecretLobster() {
   clearTimeout(secretTimer);
   if (secretTaps >= 3) {
     secretTaps = 0;
+    secretLobster.style.transition = "all .3s";
+    secretLobster.style.opacity = "1";
+    secretLobster.style.transform = "scale(2)";
+    setTimeout(() => {
+      secretLobster.style.opacity = "";
+      secretLobster.style.transform = "";
+    }, 600);
     selectedPreset = "ai_future";
     renderPresets();
     if (sourceBlob) applyStyle();

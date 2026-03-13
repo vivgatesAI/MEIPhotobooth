@@ -61,35 +61,26 @@
 
     <!-- ═══════════ CAMERA VIEW ═══════════ -->
     <section id="cameraView" class="view camera-view">
-      <div class="cam-header">
-        <button id="homeBtn" class="btn-round" title="Back to Home">⚓</button>
-        <h2 class="cam-title">Ship's Camera</h2>
-        <button id="flipBtn" class="btn-round" title="Flip Camera">🔄</button>
-      </div>
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="captureCanvas" style="display:none"></canvas>
+      <img id="previewImg" alt="preview" style="display:none" />
 
-      <div class="cam-viewport">
-        <div class="porthole">
-          <div class="porthole-bolts" aria-hidden="true">
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
-          </div>
-          <div class="porthole-glass">
-            <video id="video" autoplay playsinline muted></video>
-            <canvas id="captureCanvas" style="display:none"></canvas>
-            <img id="previewImg" alt="preview" style="display:none" />
-          </div>
+      <div class="cam-overlay">
+        <div class="cam-top-bar">
+          <button id="homeBtn" class="btn-round cam-btn" title="Back to Home">⚓</button>
+          <button id="flipBtn" class="btn-round cam-btn" title="Flip Camera">🔄</button>
         </div>
-      </div>
 
-      <div class="cam-controls">
-        <label class="btn btn-ghost-light">
-          📁 Upload
-          <input id="uploadInput" type="file" accept="image/*" hidden />
-        </label>
-        <button id="captureBtn" class="shutter-btn" disabled aria-label="Take Photo">
-          <span class="shutter-ring"><span class="shutter-dot"></span></span>
-        </button>
-        <div class="cam-spacer"></div>
+        <div class="cam-controls">
+          <label class="cam-upload-btn">
+            📁
+            <input id="uploadInput" type="file" accept="image/*" hidden />
+          </label>
+          <button id="captureBtn" class="shutter-btn" disabled aria-label="Take Photo">
+            <span class="shutter-ring"><span class="shutter-dot"></span></span>
+          </button>
+          <div class="cam-spacer"></div>
+        </div>
       </div>
     </section>
 

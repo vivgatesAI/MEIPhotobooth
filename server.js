@@ -27,43 +27,43 @@ const PRESETS = {
     label: "Lobster Dock",
     icon: "🦞",
     promptTemplate:
-      "Professional seaside portrait photo of the subject standing on a rustic New England lobster dock at golden hour, colorful lobster traps stacked nearby, calm harbor water reflecting warm sunlight, classic lobster boats in the background, soft ocean breeze, cinematic lighting, ultra detailed, vibrant maritime colors, joyful atmosphere, natural smile, high-end photography",
+      "Portrait photo of the subject with their exact face, features, and likeness perfectly preserved, standing on a rustic New England lobster dock at golden hour. Fun colorful cartoon-style lobsters are scattered in the background — some peeking from behind lobster traps, some waving claws, some wearing tiny captain hats. Colorful lobster traps stacked nearby, calm harbor water reflecting warm sunlight, classic lobster boats in the distance, cinematic lighting, ultra detailed, vibrant maritime colors, joyful atmosphere, high-end photography blended with whimsical cartoon lobster characters",
   },
-  watercolor_harbor: {
-    label: "Watercolor Harbor",
+  watercolor_boston: {
+    label: "Watercolor Boston",
     icon: "🎨",
     promptTemplate:
-      "Elegant watercolor painting portrait of the subject in a charming coastal harbor scene with lobster boats and colorful buoys floating in the water, soft ocean mist in the distance, gentle pastel watercolor brush strokes, artistic paper texture, warm sunlight, dreamy seaside atmosphere, the subject smiling warmly, whimsical and beautiful",
+      "Elegant watercolor painting portrait of the subject with their exact face, features, and likeness perfectly preserved, rendered in beautiful watercolor style. The background is the iconic Boston skyline — the Zakim Bridge, Custom House Clock Tower, and harbor sailboats — all painted in soft impressionistic watercolor brush strokes. Palette of cerulean blues, warm amber sunset tones, and soft coral accents. Artistic paper texture, warm sunlight, dreamy seaside atmosphere, the subject smiling warmly, whimsical and beautiful",
   },
   hand_caricature: {
     label: "Caricature",
     icon: "✏️",
     promptTemplate:
-      "Hand-painted caricature illustration of the subject with playful proportions and expressive features, standing in a vibrant New England lobster harbor full of fishing boats, lobster traps, ropes, and colorful buoys, bright cheerful colors, textured brush painting style, fun exaggerated expression, joyful personality, subject smiling brightly",
+      "Hand-painted caricature illustration of the subject preserving their exact face likeness and recognizable features with playful proportions and expressive details, standing in a vibrant New England lobster harbor full of fishing boats, lobster traps, ropes, and colorful buoys, bright cheerful colors, textured brush painting style, fun exaggerated expression, joyful personality, subject smiling brightly",
   },
-  lobster_captain: {
-    label: "Lobster Captain",
-    icon: "⚓",
+  hollywood_poster: {
+    label: "Movie Poster",
+    icon: "🎬",
     promptTemplate:
-      "Epic portrait of the subject as a legendary lobster boat captain standing proudly on the deck of a fishing vessel, dramatic ocean horizon behind them, stacks of lobster traps, seagulls flying overhead, golden sunset reflecting off the sea, cinematic lighting, heroic maritime atmosphere, ultra detailed, powerful composition",
+      "Dramatic Hollywood movie poster portrait of the subject with their exact face, features, and likeness perfectly preserved. Cinematic dramatic lighting, epic blockbuster style, bold saturated colors, shallow depth of field, heroic confident pose. The movie title 'MEI 2026' displayed prominently in bold cinematic metallic lettering at the bottom of the poster. Film grain texture, dramatic stormy sky background, lens flare, professional movie poster composition, award-winning photography",
+  },
+  pixar_3d: {
+    label: "Pixar 3D",
+    icon: "🧸",
+    promptTemplate:
+      "3D animated cartoon character portrait of the subject with their exact face likeness and recognizable features faithfully translated into Pixar-style 3D animation. Smooth stylized skin, large expressive eyes that match the subject's real eyes, vibrant colors, Pixar studio quality lighting with soft rim light and warm key light, playful colorful background with depth of field, cheerful happy expression, ultra detailed 3D render, Disney Pixar movie quality character",
   },
   team_banner: {
     label: "Team Banner",
     icon: "🚩",
     promptTemplate:
-      "Group portrait with the subject standing together like a proud crew on a scenic harbor dock, a large elegant maritime banner behind them displaying the team name '{{TEAM_NAME}}' in beautiful classic nautical lettering, with 'MEI 2026' written below it in smaller elegant font, festive harbor atmosphere, lobster traps and boats nearby, warm celebratory lighting",
-  },
-  coastal_celebration: {
-    label: "Coastal Celebration",
-    icon: "🎉",
-    promptTemplate:
-      "Vibrant seaside celebration portrait with the subject standing near a festive lobster shack by the harbor, colorful string lights, lobster traps and buoys decorating the dock, glowing sunset sky over the ocean, joyful coastal summer vibes, cinematic lighting, ultra detailed, beautiful atmosphere",
+      "Portrait of the subject with their exact face, features, and likeness perfectly preserved. A large elegant maritime banner is placed behind them displaying the team name '{{TEAM_NAME}}' in beautiful classic nautical gold serif lettering on a navy blue ribbon with rope borders, and 'MEI 2026' in smaller elegant font below. Clean professional event photography background with soft bokeh, warm celebratory lighting, the subject is the clear focus of the image, no extra people added",
   },
   ai_future: {
     label: "AI Future",
     icon: "🤖",
     promptTemplate:
-      "Futuristic cyberpunk coastal city filled with advanced AI technology, glowing neon buildings, holographic ocean waves, robotic lobster drones flying overhead, neon lights reflecting off wet streets, vibrant sci-fi atmosphere, dramatic lighting, highly detailed futuristic world. A glowing neon sign reads: 'Made with ❤️ by Medical AI'.",
+      "The subject with their exact face, features, and likeness perfectly preserved standing in a futuristic cyberpunk coastal city filled with advanced AI technology. Glowing neon buildings, holographic ocean waves, robotic lobster drones flying overhead, neon lights reflecting off wet streets, vibrant sci-fi atmosphere, dramatic lighting, highly detailed futuristic world. A glowing neon sign reads: 'Made with ❤️ by Medical AI'.",
   },
 };
 
@@ -74,11 +74,11 @@ function buildInstruction({ presetKey, teamName = "" }) {
   }
 
   const identityGuardrail = [
-    "CRITICAL INSTRUCTION: The person in the photo must remain COMPLETELY UNCHANGED.",
-    "Preserve exact face, expression, body proportions, skin tone, age, and all identity features.",
-    "NO face swaps, NO person replacement, NO age changes, NO beauty filters.",
+    "CRITICAL INSTRUCTION: The person's FACE and LIKENESS must remain COMPLETELY UNCHANGED and perfectly recognizable.",
+    "Preserve exact facial features, face shape, expression, body proportions, skin tone, age, hair, and all identity features.",
+    "NO face swaps, NO person replacement, NO age changes, NO beauty filters, NO altering facial structure.",
+    "The output image must look unmistakably like the same person from the input photo.",
     "Only modify the environment, background, lighting, and artistic style around the person.",
-    "The person's pose, clothing, and appearance must be pixel-perfect preserved.",
   ].join(" ");
 
   const finalTeamName = String(teamName || "").trim() || "YOUR TEAM";
